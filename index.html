@@ -43,7 +43,8 @@
             display: flex; align-items: center; justify-content: center; overflow: hidden; border: 2px solid #555;
             font-size: 10px; text-align: center; cursor: pointer; position: relative;
         }
-        .hero-slot img { width: 100%; height: 100%; object-fit: cover; }
+        /* 👇 프리뷰 이미지도 잘리지 않게 수정 */
+        .hero-slot img { width: 100%; height: 100%; object-fit: cover; object-position: top; }
 
         /* --- 모달 (팝업) 스타일 --- */
         .modal {
@@ -52,29 +53,47 @@
         }
         .modal-content {
             background-color: #1e1e1e; padding: 20px; border-radius: 10px; width: 90%; max-width: 400px;
-            max-height: 80vh; display: flex; flex-direction: column; border: 1px solid #444;
+            /* 👇 모달 높이 고정 및 내부 스크롤 설정 (목록 잘림 해결) */
+            height: 80vh;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #444;
         }
         /* 검색창 스타일 */
-        #heroSearch { margin-bottom: 10px; width: 93%; }
+        #heroSearch { margin-bottom: 10px; width: 93%; flex-shrink: 0; }
 
-        /* 그리드 스크롤 가능하게 */
+        /* 👇 영웅 그리드 스크롤 설정 */
         .hero-grid {
             display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 5px;
-            overflow-y: auto; flex-grow: 1; padding-right: 5px;
+            overflow-y: auto; /* 스크롤 활성화 */
+            flex-grow: 1; /* 남은 공간 모두 차지 */
+            padding-right: 5px;
+            min-height: 0; /* 파이어폭스 등 호환성 */
         }
         .hero-item {
             display: flex; flex-direction: column; align-items: center; cursor: pointer;
         }
+
+        /* 👇 영웅 동그라미 이미지 수정 (확대 문제 해결) */
         .hero-circle {
             width: 45px; height: 45px; border-radius: 50%; background: #333; border: 2px solid #555;
             display: flex; align-items: center; justify-content: center; overflow: hidden;
         }
         .hero-circle.selected { border-color: #00ff00; box-shadow: 0 0 8px #00ff00; }
-        .hero-circle img { width: 100%; height: 100%; object-fit: cover; }
+
+        .hero-circle img {
+            width: 100%;
+            height: 100%;
+            /* 핵심 수정: 이미지를 꽉 채우되 비율 유지하며 상단(얼굴) 위주로 보여줌 */
+            object-fit: cover;
+            object-position: top 20%;
+        }
+
+        /* 이름이 너무 길면 ... 처리 */
         .hero-name { font-size: 10px; margin-top: 3px; color: #ccc; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 45px; }
 
-        .close-btn { background: #c62828; margin-top: 10px; }
-        .confirm-btn { background: #2e7d32; margin-top: 5px; }
+        .close-btn { background: #c62828; margin-top: 10px; flex-shrink: 0;}
+        .confirm-btn { background: #2e7d32; margin-top: 5px; flex-shrink: 0;}
     </style>
 </head>
 <body>
