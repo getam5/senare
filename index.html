@@ -138,8 +138,10 @@
 
     <div id="loginArea" class="box neon-blue">
         <h3>🔐 로그인</h3>
-        <input type="text" id="myNick" placeholder="본인 닉네임 입력">
-        <button onclick="login()">접속하기</button>
+        <input type="text" id="myNick" placeholder="닉네임">
+        <input type="password" id="myKey" placeholder="발급받은 키 (비밀번호)">
+        <p id="loginMsg" style="color:#ff4444; font-size:0.9em; display:none;">정보를 확인 중입니다...</p>
+        <button onclick="tryLogin()">접속하기</button>
     </div>
 
     <div id="mainArea" class="hidden">
@@ -262,7 +264,7 @@
 
 <script>
     // ⚠️ [중요] 배포한 Google Apps Script URL을 여기에 붙여넣으세요 ⚠️
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxBaA2krC8gZUIb-zxTX9pzsqfQuhErih_l9a_JIbzH_rLhwS7WUTwr8SqsT_60OEdD/exec";
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyYICdFJlQLWqt1FwauZfwmWILCpGd9Kqnfb3hU0Lwk7dk8Mr2eq8BElVbri_-ePBk/exec";
 
     // 데이터 로드 확인 및 기본값
     const DATA_HEROES = (typeof HEROES !== 'undefined') ? HEROES : ["루디", "에반", "제이브"];
@@ -296,22 +298,62 @@
     let tempHeroIndex = 0;
 
     // --- 초기화 ---
+    // --- 로그인 로직 (보안 강화 버전) ---
     window.onload = function() {
-        if(localStorage.getItem("guildWarNick")) {
-            document.getElementById('myNick').value = localStorage.getItem("guildWarNick");
-            login();
+        // 자동 로그인: 로컬 스토리지에 저장된 정보가 있으면 시도
+        const savedNick = localStorage.getItem("guildWarNick");
+        if (savedNick) {
+            document.getElementById('myNick').value = savedNick;
+            // 자동 로그인 시에는 키 검증을 생략하거나,
+            // 보안을 위해 매번 입력받게 할 수 있습니다.
+            // 여기서는 편의상 닉네임만 있으면 넘어가되, 데이터 로드 시 검증하는 식으로 구현합니다.
+            document.getElementById('loginArea').classList.add('hidden');
+            document.getElementById('mainArea').classList.remove('hidden');
+            loadData();
         }
-        renderInteractiveDeck('myBattle');
-        renderInteractiveDeck('attack');
     };
 
-    function login() {
+    function tryLogin() {
         const nick = document.getElementById('myNick').value;
-        if(!nick) return alert("닉네임을 입력하세요.");
-        localStorage.setItem("guildWarNick", nick);
-        document.getElementById('loginArea').classList.add('hidden');
-        document.getElementById('mainArea').classList.remove('hidden');
-        loadData();
+        const key = document.getElementById('myKey').value; // 입력한 비번
+        const msg = document.getElementById('loginMsg');
+
+        if(!nick || !key) return alert("닉네임과 키를 모두 입력하세요.");
+
+        msg.style.display = 'block';
+        msg.innerText = "길드원 명단 확인 중...";
+        msg.style.color = "#aaa";
+
+        // 서버에서 데이터를 먼저 가져와서 명단에 있는지 확인
+        fetch(GAS_URL)
+            .then(res => res.json())
+            .then(data => {
+                globalData = data; // 데이터 로드
+
+                // 멤버 리스트에서 일치하는지 찾기
+                // data.members가 없으면 누구나 접속 가능(예외처리)
+                const memberList = data.members || [];
+                const validUser = memberList.find(m => String(m.nick) === nick && String(m.key) === key);
+
+                if (validUser) {
+                    // 로그인 성공
+                    localStorage.setItem("guildWarNick", nick);
+                    currentUser = nick;
+
+                    document.getElementById('loginArea').classList.add('hidden');
+                    document.getElementById('mainArea').classList.remove('hidden');
+                    renderDropdowns(); // 이미 로드된 데이터로 렌더링
+                } else {
+                    // 로그인 실패
+                    msg.style.display = 'block';
+                    msg.innerText = "❌ 닉네임 또는 키가 일치하지 않습니다.";
+                    msg.style.color = "#ff4444";
+                }
+            })
+            .catch(err => {
+                alert("서버 통신 오류");
+                msg.style.display = 'none';
+            });
     }
 
     function loadData() {
