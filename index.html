@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>길드전 작전상황실 Final</title>
+    <title>길드전 작전상황실 Final v2</title>
     <script src="gamedata.js"></script>
     <style>
         /* --- 기본 스타일 --- */
@@ -27,21 +27,18 @@
             overflow-x: auto; min-height: 120px;
         }
 
-        /* 영웅 카드 (영웅 + 장비) */
         .hero-card {
             display: flex; flex-direction: column; align-items: center;
             width: 100px; flex-shrink: 0; background: #202020; border-radius: 8px; padding: 5px; border: 1px solid #333;
         }
 
-        /* [수정] 영웅 슬롯 (메인 화면) */
         .hero-slot {
             width: 50px; height: 50px; border-radius: 50%; background: #444; border: 2px solid #555;
             display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; margin-bottom: 5px;
+            font-size: 14px; font-weight: bold; color: #aaa; /* 텍스트 폴백용 스타일 */
         }
-        /* 얼굴 위치 조정 (top 10%) */
         .hero-slot img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
 
-        /* 장비 그리드 */
         .equipment-grid { display: grid; width: 100%; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; grid-template-areas: "w1 a1 acc" "w2 a2 acc"; }
         .gear-slot, .acc-slot { background: #333; border: 1px solid #444; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; cursor: pointer; text-align: center; line-height: 1.1; padding: 2px; word-break: keep-all; }
         .slot-w1 { grid-area: w1; border-color: #552222; color: #ffcccc; height: 24px; }
@@ -50,60 +47,46 @@
         .slot-a2 { grid-area: a2; border-color: #222255; color: #ccccff; height: 24px; }
         .acc-slot { grid-area: acc; border-color: #554400; color: #ffffcc; height: 50px; writing-mode: horizontal-tb; }
 
-        /* 펫 슬롯 */
         .pet-wrapper { margin-left: 5px; padding-left: 5px; border-left: 1px solid #444; display:flex; align-items:center; }
-        .pet-slot { width: 45px; height: 45px; border-radius: 8px; background: #333; border: 2px dashed #666; overflow: hidden; display:flex; align-items:center; justify-content:center;}
+        .pet-slot {
+            width: 45px; height: 45px; border-radius: 8px; background: #333; border: 2px dashed #666; overflow: hidden;
+            display:flex; align-items:center; justify-content:center; cursor: pointer;
+            font-size: 10px; color: #888; text-align: center;
+        }
         .pet-slot img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* [수정] 공략 카드 및 내부 이미지 */
+        /* 공략 카드 */
         .strategy-card { background: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; text-align: left; }
-
-        /* 추천덱 이미지 크기 강제 고정 */
         .strategy-deck-preview { display: flex; gap: 4px; margin: 8px 0; flex-wrap: wrap; }
+
+        /* 덱 미리보기 아이콘 (작은 원) */
         .strategy-icon {
-            width: 32px; height: 32px;
-            border-radius: 50%;
-            border: 1px solid #666;
-            overflow: hidden;
-            background: #000;
+            width: 32px; height: 32px; border-radius: 50%; border: 1px solid #666; overflow: hidden; background: #333;
+            display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa;
         }
-        .strategy-icon img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            object-position: top 10%; /* 얼굴 위주 */
+        .strategy-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
+
+        /* [NEW] 현재 적용된 공략 메모 박스 */
+        #activeStrategyNote {
+            background: #333; color: #ffd700; border: 1px solid gold;
+            padding: 10px; margin-bottom: 10px; border-radius: 6px;
+            text-align: left; font-size: 0.9em; display: none;
         }
 
-        /* --- 모달 (선택창) --- */
+        /* 모달 */
         .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
         .modal-content { background-color: #1e1e1e; padding: 15px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid #444; }
 
-        /* [수정] 영웅 선택 그리드 (사이즈 최적화) */
-        .hero-grid {
-            display: grid;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
-            overflow-y: auto;
-            padding: 10px;
-            align-content: start;
-        }
+        .hero-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; overflow-y: auto; padding: 10px; align-content: start; }
         .hero-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-
-        /* 선택창 동그라미 크기 고정 */
         .hero-circle {
-            width: 48px; height: 48px;
-            border-radius: 50%; border: 2px solid #555;
-            overflow: hidden; background: #333;
-            position: relative;
+            width: 48px; height: 48px; border-radius: 50%; border: 2px solid #555; overflow: hidden; background: #333; position: relative;
+            display: flex; align-items: center; justify-content: center; font-size: 11px; color: #aaa;
         }
-        /* 선택창 이미지 꽉 차게 */
-        .hero-circle img {
-            width: 100%; height: 100%;
-            object-fit: cover;
-            object-position: top 15%; /* 얼굴 중심 */
-        }
+        .hero-circle img { width: 100%; height: 100%; object-fit: cover; object-position: top 15%; }
         .hero-name { font-size: 11px; color: #ccc; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50px;}
 
-        /* 장비/장신구 모달 */
+        /* 장비 모달 */
         .gear-modal-grid { display: flex; gap: 5px; height: 300px; }
         .gear-col { flex: 1; overflow-y: auto; background: #222; border: 1px solid #444; border-radius: 4px; display:flex; flex-direction:column;}
         .gear-btn, .acc-btn { padding: 12px; background: transparent; color: #aaa; border: none; border-bottom: 1px solid #333; text-align: left; cursor: pointer; }
@@ -144,6 +127,9 @@
 
         <div class="box neon-purple">
             <h3>2. 내 공격팀 구성</h3>
+
+            <div id="activeStrategyNote"></div>
+
             <div class="info-row">
                 <select id="myFormation">
                     <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
@@ -207,7 +193,7 @@
             <div class="gear-col"><h4>세트</h4><div id="gearSetList"></div></div>
             <div class="gear-col"><h4>주옵션</h4><div id="gearOptionList"></div></div>
         </div>
-        <div style="padding:10px; background:#333; text-align:center;"><span id="gearPreviewText" style="color:#0f0;">-</span></div>
+        <div style="padding:10px; background:#333; text-align:center;"><span id="gearPreviewText" style="color:#00ff00;">-</span></div>
         <div style="display:flex; gap:10px; margin-top:10px;">
             <button onclick="confirmGear()" style="background:#2e7d32;">확인</button>
             <button onclick="closeGearModal()" style="background:#c62828;">취소</button>
@@ -283,7 +269,7 @@
         if(v) sel.value = v;
     }
 
-    // --- 줄임말 ---
+    // --- 텍스트 처리 (줄임말 및 포맷) ---
     function getAbbr(t) {
         if(!t) return "";
         const m = {
@@ -295,14 +281,21 @@
         };
         return m[t] || t;
     }
-    function formatGearSlot(t) {
-        if(!t) return "";
-        const m = t.match(/^([^(]+)\(([^)]+)\)$/);
-        if(m) return `${getAbbr(m[1])}(${getAbbr(m[2])})`;
-        return getAbbr(t);
+
+    function formatGearSlot(fullText) {
+        if(!fullText) return "";
+        // 괄호 중첩 파싱 (ex: 암살자(약점...))
+        const first = fullText.indexOf('(');
+        const last = fullText.lastIndexOf(')');
+        if(first > 0 && last > first) {
+            const set = fullText.substring(0, first);
+            const opt = fullText.substring(first+1, last);
+            return `${getAbbr(set)}(${getAbbr(opt)})`;
+        }
+        return getAbbr(fullText);
     }
 
-    // --- 덱 렌더링 ---
+    // --- 덱 렌더링 (이미지 폴백 처리 추가) ---
     function renderInteractiveDeck(mode) {
         const container = document.getElementById(mode==='myBattle'?'myBattleDeckContainer':'newAttackDeckContainer');
         const state = mode==='myBattle'?myDeckState:adminDeckState;
@@ -310,7 +303,11 @@
 
         let h = "";
         state.forEach((o, i) => {
-            const img = o.name ? `<img src="images/${o.name}.png" onerror="this.parentNode.innerText='${o.name[0]}'">` : "+";
+            // [수정] 이미지 로드 실패 시 이름 텍스트 표시
+            const img = o.name ?
+                `<img src="images/${o.name}.png" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
+                : "+";
+
             h += `<div class="hero-card">
                     <div class="hero-slot" onclick="openSelector('${mode}','HERO',${i})">${img}</div>
                     <div class="equipment-grid">
@@ -322,11 +319,16 @@
                     </div>
                   </div>`;
         });
-        const pImg = pState ? `<img src="images/${pState}.png">` : "<span style='font-size:10px;color:#888'>PET</span>";
+
+        // [수정] 펫 이미지 로드 실패 시 이름 텍스트 표시
+        const pImg = pState ?
+            `<img src="images/${pState}.png" onerror="this.style.display='none'; this.parentNode.innerText='${pState}'">`
+            : "<span style='font-size:10px;color:#888'>PET</span>";
+
         h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('${mode}','PET')">${pImg}</div></div>`;
         container.innerHTML = h;
 
-        // 저장값 생성
+        // 저장용 텍스트 생성
         const res = state.filter(x=>x.name).map(x => {
             if(x.w1||x.a1||x.w2||x.a2||x.acc) return `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`;
             return x.name;
@@ -352,7 +354,7 @@
         src.filter(x=>x.includes(filter)).forEach(item => {
             const d = document.createElement('div'); d.className='hero-item';
             d.onclick=()=>{confirmSel(type,item)};
-            d.innerHTML=`<div class="hero-circle"><img src="images/${item}.png" onerror="this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
+            d.innerHTML=`<div class="hero-circle"><img src="images/${item}.png" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
             g.appendChild(d);
         });
     }
@@ -418,16 +420,19 @@
     }
     function closeAccModal() { document.getElementById('accModal').style.display='none'; }
 
-    // 공략 적용
+    // --- 공략 선택 및 적용 (수정된 파싱 로직) ---
     function selectEnemy() {
         const n=document.getElementById('enemySelect').value; const e=globalData.enemies.find(x=>x.name===n);
         const v=document.getElementById('enemyDeckVisual');
-        if(!e) return v.innerHTML="<span style='color:#666'>정보 없음</span>";
+        document.getElementById('activeStrategyNote').style.display = 'none'; // 타겟 변경시 노트 숨김
+
+        if(!e) return v.innerHTML="<span style='color:#666;line-height:60px'>정보 없음</span>";
         document.getElementById('currentEnemyDeck').value=e.deck;
+
         let h="";
         e.deck.split(',').forEach(x=>{
             const name=x.split('(')[0].trim();
-            h+=`<div class="hero-slot" style="margin:0 2px; border-color:#f55;"><img src="images/${name}.png" onerror="this.parentNode.innerText='${name[0]}'"></div>`;
+            h+=`<div class="hero-slot" style="margin:0 2px; border-color:#f55;"><img src="images/${name}.png" onerror="this.style.display='none';this.parentNode.innerText='${name[0]}'"></div>`;
         });
         v.innerHTML=h;
 
@@ -439,32 +444,66 @@
                 let icons="";
                 s.attack.split(',').forEach(k=>{
                     const name=k.split('(')[0].trim();
-                    icons+=`<div class="strategy-icon"><img src="images/${name}.png"></div>`;
+                    icons+=`<div class="strategy-icon"><img src="images/${name}.png" onerror="this.style.display='none';"></div>`;
                 });
                 sh+=`<div class="strategy-card" onclick='applyStrategy(${JSON.stringify(s)})'>
                         <div style="display:flex;justify-content:space-between;"><span style="color:gold">추천 #${i+1} (${s.formation})</span><span style="font-size:0.8em;color:#aaa">${s.pet}</span></div>
                         <div class="strategy-deck-preview">${icons}</div>
-                        <div style="font-size:0.8em;color:#8f8">💡 ${s.items}</div>
+                        <div style="font-size:0.8em;color:#8f8">💡 ${s.items||""}</div>
                      </div>`;
             });
             sb.innerHTML=sh;
         } else sb.innerHTML="<p style='color:#666'>공략 없음</p>";
     }
 
+    // [수정] applyStrategy: 중첩 괄호 파싱 로직 개선
     function applyStrategy(s) {
         myDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
-        s.attack.split(',').forEach((p,i)=>{
-            if(i>=5)return;
-            const m=p.match(/^([^(]+)(?:\(([^)]+)\))?$/);
-            if(m) {
-                myDeckState[i].name=m[1].trim();
-                if(m[2]) { const g=m[2].split('/'); myDeckState[i].w1=g[0]||""; myDeckState[i].a1=g[1]||""; myDeckState[i].w2=g[2]||""; myDeckState[i].a2=g[3]||""; myDeckState[i].acc=g[4]||""; }
-            } else myDeckState[i].name=p;
+
+        // 데이터 포맷: "루디(선봉(치확)/...)" 
+        // 쉼표로 나눌 때 괄호 안의 쉼표는 무시해야 하지만, 현재 덱 저장 포맷은 영웅간 구분을 ', '로 하고
+        // 내부 장비 구분은 '/'로 하므로 ',' split은 안전하다고 가정. (단, 장비 이름에 ,가 없어야 함)
+        // 만약 안전하지 않다면 정규식 필요. 여기선 간단하게 split 처리.
+
+        const parts = s.attack.split(',').map(p=>p.trim());
+        parts.forEach((p, i) => {
+            if(i>=5) return;
+
+            // "Name(Data)" 형태 찾기. 
+            // 괄호가 중첩되어 있으므로 indexOf 사용
+            const firstParen = p.indexOf('(');
+            const lastParen = p.lastIndexOf(')');
+
+            if(firstParen > 0 && lastParen > firstParen) {
+                myDeckState[i].name = p.substring(0, firstParen).trim();
+                const content = p.substring(firstParen + 1, lastParen);
+                const g = content.split('/'); // 장비 구분
+
+                myDeckState[i].w1 = g[0] || "";
+                myDeckState[i].a1 = g[1] || "";
+                myDeckState[i].w2 = g[2] || "";
+                myDeckState[i].a2 = g[3] || "";
+                myDeckState[i].acc = g[4] || "";
+            } else {
+                myDeckState[i].name = p;
+            }
         });
-        myPetState=s.pet||"";
-        document.getElementById('myFormation').value=s.formation||"기본";
-        document.getElementById('myKeyItems').value=s.items||"";
+
+        myPetState = s.pet || "";
+        document.getElementById('myFormation').value = s.formation || "기본";
+        document.getElementById('myKeyItems').value = s.items || "";
+
+        // [NEW] 상세 공략 표시
+        const noteBox = document.getElementById('activeStrategyNote');
+        if(s.note) {
+            noteBox.style.display = 'block';
+            noteBox.innerHTML = `<strong>📝 공략 노트:</strong><br>${s.note.replace(/\n/g, '<br>')}`;
+        } else {
+            noteBox.style.display = 'none';
+        }
+
         renderInteractiveDeck('myBattle');
+        document.querySelector('.neon-purple').scrollIntoView({behavior:'smooth'});
     }
 
     // 서버 전송
@@ -491,7 +530,6 @@
         for(let i=1; i<=5; i++) document.getElementById(`preview_enemy_${i}`).innerHTML=tempEnemyHeroes[i-1]?`<img src="images/${tempEnemyHeroes[i-1]}.png" style="width:100%;height:100%;object-fit:cover;">`:"+";
         document.getElementById('newEnemyDeckResult').value=tempEnemyHeroes.join(',');
     }
-
     function toggleAdmin() { document.getElementById('adminArea').classList.toggle('hidden'); }
 
 </script>
