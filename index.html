@@ -185,36 +185,163 @@
 
 <script>
     // ⚠️ 배포한 Apps Script URL을 꼭 여기에 넣으세요!
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbxz_Y0rXv7uAJ1cdoxyn_pka8lFyee-VqhQbxUlx2WxGc_2i_OcxWBtLQdAY4iYBbP0/exec";
+    const GAS_URL = "https://script.google.com/macros/s/......./exec";
 
-    // 전역 변수 설정
+    // gamedata.js 데이터 로드 확인
+    const DATA_HEROES = (typeof HEROES !== 'undefined') ? HEROES : ["데이터로드실패"];
+
     let currentUser = "";
     let globalData = { enemies: [], strategies: [] };
     let currentSelectionMode = "";
     let tempSelectedHeroes = [];
 
-    // gamedata.js가 로드되었는지 안전하게 확인 (없을 경우 빈 배열 처리)
-    const DATA_HEROES = (typeof HEROES !== 'undefined') ? HEROES : ["데이터로드실패"];
+    // --- 1. 페이지 로드 시 로그인 상태 확인 (자동 로그인) ---
+    window.onload = function() {
+        const savedNick = localStorage.getItem("guildWarNick");
+        if (savedNick) {
+            document.getElementById('myNick').value = savedNick;
+            login(); // 저장된 닉네임이 있으면 바로 로그인 처리
+        }
+    };
 
-    // --- 로그인 ---
     function login() {
         const nick = document.getElementById('myNick').value;
         if (!nick) return alert("닉네임을 입력하세요.");
+
         currentUser = nick;
+        // 로컬 스토리지에 닉네임 저장 (새로고침 해도 유지됨)
+        localStorage.setItem("guildWarNick", nick);
+
         document.getElementById('loginArea').classList.add('hidden');
         document.getElementById('mainArea').classList.remove('hidden');
         loadData();
     }
 
-    // --- 모달: 영웅 선택 로직 ---
+    // 로그아웃 기능 (필요시 사용)
+    function logout() {
+        localStorage.removeItem("guildWarNick");
+        location.reload();
+    }
+
+    // --- 2. 데이터 로드 및 UI 렌더링 ---
+    function loadData() {
+        fetch(GAS_URL)
+            .then(res => res.json())
+            .then(data => {
+                globalData = data;
+                renderDropdowns();
+            })
+            .catch(err => console.error("데이터 로드 실패:", err));
+    }
+
+    function renderDropdowns() {
+        const select = document.getElementById('enemySelect');
+        const adminSelect = document.getElementById('targetEnemySelect');
+
+        // 현재 선택된 값 기억 (리렌더링 시 유지하기 위함)
+        const currentSelection = select.value;
+
+        select.innerHTML = '<option value="">-- 상대를 선택하세요 --</option>';
+        adminSelect.innerHTML = '<option value="">-- 공략할 대상 선택 --</option>';
+
+        globalData.enemies.forEach(e => {
+            select.add(new Option(e.name, e.name));
+            adminSelect.add(new Option(e.name, e.name));
+        });
+
+        // 값 복구
+        if(currentSelection) select.value = currentSelection;
+    }
+
+    // --- 3. 비동기 적군 추가 (새로고침 X) ---
+    function addNewEnemy() {
+        const name = document.getElementById('newEnemyName').value;
+        const deck = document.getElementById('newEnemyDeckResult').value;
+
+        if(!name || !deck) return alert("이름과 방어덱을 모두 입력하세요.");
+
+        // 버튼 비활성화 (중복 클릭 방지)
+        const btn = event.target;
+        btn.innerText = "등록 중...";
+        btn.disabled = true;
+
+        fetch(GAS_URL, {
+            method: "POST", mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "add_enemy", enemyName: name, defenseDeck: deck })
+        }).then(() => {
+            // 1. 서버 전송 완료 후, 로컬 데이터에 즉시 추가 (화면 갱신용)
+            globalData.enemies.push({ name: name, deck: deck });
+
+            // 2. 드롭다운 갱신
+            renderDropdowns();
+
+            // 3. 입력창 초기화
+            document.getElementById('newEnemyName').value = "";
+            document.getElementById('newEnemyDeckResult').value = "";
+            resetPreviewSlots('enemy'); // 프리뷰 초기화 함수 호출
+
+            alert("✅ 적군 등록 완료! (바로 목록에서 확인 가능)");
+
+            // 버튼 복구
+            btn.innerText = "적군 등록 완료";
+            btn.disabled = false;
+        });
+    }
+
+    // --- 4. 비동기 공략 추가 (새로고침 X) ---
+    function addStrategy() {
+        const target = document.getElementById('targetEnemySelect').value;
+        const deck = document.getElementById('newAttackDeckResult').value;
+        const note = document.getElementById('newStrategyNote').value;
+
+        if(!target || !deck) return alert("대상과 공격덱을 선택하세요.");
+
+        const btn = event.target;
+        btn.innerText = "등록 중...";
+        btn.disabled = true;
+
+        fetch(GAS_URL, {
+            method: "POST", mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ action: "add_strategy", targetEnemy: target, attackDeck: deck, note: note, author: currentUser })
+        }).then(() => {
+            // 1. 로컬 데이터 추가
+            globalData.strategies.push({ target: target, attack: deck, note: note });
+
+            // 2. 만약 현재 보고 있는 적군에 대한 공략이라면 화면 즉시 갱신
+            const currentView = document.getElementById('enemySelect').value;
+            if(currentView === target) {
+                showStrategy();
+            }
+
+            // 3. 입력창 초기화
+            document.getElementById('newAttackDeckResult').value = "";
+            document.getElementById('newStrategyNote').value = "";
+            document.getElementById('targetEnemySelect').value = "";
+            resetPreviewSlots('attack');
+
+            alert("✅ 공략 등록 완료!");
+
+            btn.innerText = "공략 등록 완료";
+            btn.disabled = false;
+        });
+    }
+
+    // --- UI 초기화 헬퍼 함수 ---
+    function resetPreviewSlots(mode) {
+        for(let i=1; i<=5; i++) {
+            const slot = document.getElementById(`preview_${mode}_${i}`);
+            slot.innerHTML = "+";
+            slot.style.border = "2px solid #555";
+        }
+    }
+
+    // --- 기존 로직들 (모달, 전략 표시 등) ---
     function openHeroSelector(mode) {
         currentSelectionMode = mode;
         tempSelectedHeroes = [];
-
-        // 검색창 초기화
         document.getElementById('heroSearch').value = "";
-
-        // 전체 목록 렌더링
         renderHeroGrid(DATA_HEROES);
         document.getElementById('heroModal').style.display = 'flex';
     }
@@ -223,15 +350,12 @@
         document.getElementById('heroModal').style.display = 'none';
     }
 
-    // 검색 필터링 함수
     function filterHeroes() {
         const query = document.getElementById('heroSearch').value.toLowerCase();
-        // 검색어에 맞는 영웅만 필터링
         const filtered = DATA_HEROES.filter(h => h.toLowerCase().includes(query));
         renderHeroGrid(filtered);
     }
 
-    // 그리드 그리기 (데이터 기반)
     function renderHeroGrid(list) {
         const grid = document.getElementById('heroGrid');
         grid.innerHTML = "";
@@ -244,16 +368,11 @@
         list.forEach(hero => {
             const item = document.createElement('div');
             item.className = 'hero-item';
-
-            // 클릭 시 선택/해제 토글
             item.onclick = () => toggleHeroSelect(hero, item);
 
-            // 이미 선택된 영웅인지 확인하여 스타일 적용
             const isSelected = tempSelectedHeroes.includes(hero);
             const selectedClass = isSelected ? 'selected' : '';
 
-            // 이미지 경로: images/이름.png
-            // 이미지가 없으면 텍스트 표시 (onerror)
             item.innerHTML = `
                 <div class="hero-circle ${selectedClass}" id="hero_${hero}">
                     <img src="images/${hero}.png" alt="${hero}" onerror="this.style.display='none'; this.parentNode.innerText='${hero.substring(0,2)}'">
@@ -266,13 +385,10 @@
 
     function toggleHeroSelect(heroName, element) {
         const circle = element.querySelector('.hero-circle');
-
         if (tempSelectedHeroes.includes(heroName)) {
-            // 취소
             tempSelectedHeroes = tempSelectedHeroes.filter(h => h !== heroName);
             circle.classList.remove('selected');
         } else {
-            // 추가
             if (tempSelectedHeroes.length >= 5) return alert("최대 5명까지만 선택 가능합니다.");
             tempSelectedHeroes.push(heroName);
             circle.classList.add('selected');
@@ -300,29 +416,6 @@
         });
     }
 
-    // --- 데이터 통신 (Google Apps Script) ---
-    function loadData() {
-        fetch(GAS_URL)
-            .then(res => res.json())
-            .then(data => {
-                globalData = data;
-                renderDropdowns();
-            })
-            .catch(err => console.error("데이터 로드 실패:", err));
-    }
-
-    function renderDropdowns() {
-        const select = document.getElementById('enemySelect');
-        const adminSelect = document.getElementById('targetEnemySelect');
-        select.innerHTML = '<option value="">-- 상대를 선택하세요 --</option>';
-        adminSelect.innerHTML = '<option value="">-- 공략할 대상 선택 --</option>';
-
-        globalData.enemies.forEach(e => {
-            select.add(new Option(e.name, e.name));
-            adminSelect.add(new Option(e.name, e.name));
-        });
-    }
-
     function showStrategy() {
         const name = document.getElementById('enemySelect').value;
         const visualBox = document.getElementById('enemyDeckVisual');
@@ -335,7 +428,6 @@
             return;
         }
 
-        // 방어덱 아이콘 렌더링
         const heroes = enemy.deck.split(',');
         let html = "";
         heroes.forEach(h => {
@@ -346,7 +438,6 @@
         });
         visualBox.innerHTML = html;
 
-        // 공략 표시
         const strategies = globalData.strategies.filter(s => s.target === name);
         if(strategies.length > 0) {
             let sHtml = "";
@@ -369,31 +460,6 @@
         } else {
             strategyBox.innerText = "등록된 공략이 없습니다.";
         }
-    }
-
-    function addNewEnemy() {
-        const name = document.getElementById('newEnemyName').value;
-        const deck = document.getElementById('newEnemyDeckResult').value;
-        if(!name || !deck) return alert("이름과 방어덱을 모두 입력하세요.");
-
-        fetch(GAS_URL, {
-            method: "POST", mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "add_enemy", enemyName: name, defenseDeck: deck })
-        }).then(() => { alert("등록 완료!"); location.reload(); });
-    }
-
-    function addStrategy() {
-        const target = document.getElementById('targetEnemySelect').value;
-        const deck = document.getElementById('newAttackDeckResult').value;
-        const note = document.getElementById('newStrategyNote').value;
-        if(!target || !deck) return alert("대상과 공격덱을 선택하세요.");
-
-        fetch(GAS_URL, {
-            method: "POST", mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ action: "add_strategy", targetEnemy: target, attackDeck: deck, note: note, author: currentUser })
-        }).then(() => { alert("공략 등록 완료!"); location.reload(); });
     }
 
     function record(result) {
