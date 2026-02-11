@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>길드전 가이드</title>
+    <style>
+        /* 다크 네온 스타일 (이미지 참고) */
+        body { background-color: #121212; color: #fff; font-family: sans-serif; text-align: center; }
+        .container { max-width: 400px; margin: 0 auto; padding: 20px; }
+        .box {
+            border: 2px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 20px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.5);
+        }
+        .neon-blue { border-color: #00ffff; box-shadow: 0 0 10px #00ffff; }
+        .neon-green { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
+        .neon-red { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+
+        input, select, textarea {
+            width: 90%; padding: 10px; margin: 5px 0; background: #222; border: 1px solid #555; color: white;
+        }
+        button {
+            width: 100%; padding: 10px; background: #333; color: white; border: none; cursor: pointer; font-weight: bold;
+        }
+        button:hover { background: #555; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>🔥 길드전 가이드</h1>
+
+    <div id="step1" class="box neon-blue">
+        <h3>1. 로그인</h3>
+        <input type="text" id="myNick" placeholder="본인 닉네임">
+        <input type="password" id="myKey" placeholder="발급받은 키">
+        <button onclick="login()">로그인</button>
+    </div>
+
+    <div id="mainArea" class="hidden">
+
+        <div id="step2" class="box neon-green">
+            <h3>2. 공격 대상 선택</h3>
+            <select id="enemySelect" onchange="loadStrategy()">
+                <option value="">-- 상대 방어팀 선택 --</option>
+                <option value="Enemy_Ace">에이스 (방어덱: 루디/델론즈)</option>
+                <option value="Enemy_Evan">에반 (방어덱: 제이브/아일린)</option>
+            </select>
+        </div>
+
+        <div id="step3" class="box" style="border-color: gold; box-shadow: 0 0 10px gold;">
+            <h3>3. 추천 세팅</h3>
+            <div id="strategyDisplay">대상을 선택하면 공략이 뜹니다.</div>
+        </div>
+
+        <div id="step4" class="box neon-red">
+            <h3>4. 결과 기록</h3>
+            <button onclick="recordResult('WIN')" style="background:#00aa00; margin-bottom:5px;">승리 (3별)</button>
+            <button onclick="recordResult('LOSE')" style="background:#aa0000;">패배</button>
+        </div>
+
+        <div id="step5" class="box" style="border-color: purple; box-shadow: 0 0 10px purple;">
+            <h3>5. 공략 제보</h3>
+            <textarea id="reportComment" placeholder="나만의 꿀팁 제보하기"></textarea>
+            <button onclick="report()">제보하기</button>
+        </div>
+
+    </div>
+</div>
+
+<script>
+    // 아까 배포한 Google Apps Script URL을 여기에 넣으세요
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbyDHVwpbFVz7jJzv5v40tgV-32IRiVRrjnFxcrx6elyeyCPraurebHzQQziVAuBZd64/exec";
+    let currentUser = "";
+
+    function login() {
+        const nick = document.getElementById('myNick').value;
+        const key = document.getElementById('myKey').value;
+
+        // 실제로는 fetch로 서버 검증을 해야 하지만, UI 테스트를 위해 간단히 처리
+        if(nick && key) {
+            // fetch(GAS_URL, { ... }) // 실제 구현 시 여기서 통신
+            currentUser = nick;
+            alert(nick + "님 환영합니다!");
+            document.getElementById('step1').classList.add('hidden');
+            document.getElementById('mainArea').classList.remove('hidden');
+        } else {
+            alert("정보를 입력하세요.");
+        }
+    }
+
+    function loadStrategy() {
+        const enemy = document.getElementById('enemySelect').value;
+        const display = document.getElementById('strategyDisplay');
+
+        // 예시 데이터 (실제로는 fetch로 GAS에서 받아옴)
+        if(enemy === "Enemy_Ace") display.innerHTML = "💡 <b>추천:</b> 마공 덱 사용 (린 포함 필수)<br>⚠️ 주의: 상태이상 면역 챙기기";
+        else if(enemy === "Enemy_Evan") display.innerHTML = "💡 <b>추천:</b> 물공 덱 사용 (제이브 카운터)";
+        else display.innerHTML = "대상을 선택하세요.";
+    }
+
+    function recordResult(result) {
+        const enemy = document.getElementById('enemySelect').value;
+        if(!enemy) return alert("상대를 먼저 선택하세요.");
+
+        // Google Apps Script로 데이터 전송
+        const data = { action: "record", nickname: currentUser, enemyName: enemy, result: result };
+
+        // no-cors 모드는 응답을 읽을 수 없지만 전송은 됨 (간편 구현용)
+        fetch(GAS_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        }).then(() => {
+            alert("결과가 기록되었습니다: " + result);
+        });
+    }
+
+    function report() {
+        const enemy = document.getElementById('enemySelect').value;
+        const comment = document.getElementById('reportComment').value;
+        if(!enemy || !comment) return alert("상대 선택 및 내용을 입력하세요.");
+
+        const data = { action: "report", nickname: currentUser, enemyName: enemy, comment: comment };
+
+        fetch(GAS_URL, {
+            method: "POST",
+            mode: "no-cors",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        }).then(() => {
+            alert("제보 감사합니다!");
+            document.getElementById('reportComment').value = "";
+        });
+    }
+</script>
+
+</body>
+</html>
