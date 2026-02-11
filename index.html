@@ -184,7 +184,11 @@
 
 <script>
     // ⚠️ 본인의 GAS URL 입력 ⚠️
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzCecgjx4EPD1JkWhKFAw_3GZgnFK5jtUeWYwfK6Y0FGW320OgGIBrP-UKbyzViAURy/exec";
+    const GAS_URL = "https://script.google.com/macros/s/......./exec";
+
+    // --- 설정값 ---
+    // ⏳ 세션 타임아웃 시간 설정 (기본 60분: 60 * 60 * 1000)
+    const SESSION_TIMEOUT = 60 * 60 * 1000;
 
     // 데이터 정의
     const DATA_HEROES = (typeof HEROES !== 'undefined') ? HEROES : ["루디", "에반", "제이브"];
@@ -202,32 +206,85 @@
     let globalData = { members: [], enemies: [], strategies: [] };
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
 
-    // --- 실행 ---
+    // --- 초기화 및 세션 체크 ---
     window.onload = function() {
-        if(localStorage.getItem("guildWarNick")) {
-            document.getElementById('myNick').value = localStorage.getItem("guildWarNick");
-            tryLogin(true);
-        }
-        renderInteractiveDeck('myBattle'); renderInteractiveDeck('attack');
+        checkSession(); // 페이지 로드 시 세션 확인
+
+        // Keep Alive: 사용자가 클릭이나 키 입력을 할 때마다 세션 연장
+        document.addEventListener('click', refreshSession);
+        document.addEventListener('keydown', refreshSession);
+        document.addEventListener('touchstart', refreshSession);
+
+        renderInteractiveDeck('myBattle');
+        renderInteractiveDeck('attack');
     };
 
+    // 🕒 세션 확인 로직
+    function checkSession() {
+        const savedNick = localStorage.getItem("guildWarNick");
+        const expiryTime = localStorage.getItem("guildWarExpiry"); // 만료 예정 시간
+
+        if (savedNick && expiryTime) {
+            const now = new Date().getTime();
+
+            if (now > parseInt(expiryTime)) {
+                // 시간 만료됨
+                logout("세션이 만료되었습니다. 다시 로그인해주세요.");
+            } else {
+                // 유효함 -> 자동 로그인 진행
+                document.getElementById('myNick').value = savedNick;
+                tryLogin(true);
+            }
+        }
+    }
+
+    // 🕒 세션 연장 (Keep Alive)
+    function refreshSession() {
+        // 로그인 상태일 때만 연장
+        if (!document.getElementById('mainArea').classList.contains('hidden')) {
+            const newExpiry = new Date().getTime() + SESSION_TIMEOUT;
+            localStorage.setItem("guildWarExpiry", newExpiry);
+        }
+    }
+
+    // 🚪 로그아웃 처리
+    function logout(msg = "") {
+        localStorage.removeItem("guildWarNick");
+        localStorage.removeItem("guildWarExpiry");
+        if(msg) alert(msg);
+        location.reload();
+    }
+
+    // --- 로그인 ---
     function tryLogin(isAuto=false) {
         const nick = document.getElementById('myNick').value, key = document.getElementById('myKey').value;
         const msg = document.getElementById('loginMsg');
+
         if(!isAuto && (!nick||!key)) return alert("입력하세요");
+
         msg.style.display='block';
+        if(!isAuto) msg.innerText = "서버 연결 중...";
+
         fetch(GAS_URL).then(r=>r.json()).then(d => {
             globalData = d;
+
             let valid = true;
+            // 수동 로그인일 때만 키 검사 (자동 로그인은 이미 로컬스토리지 신뢰)
             if(d.members && d.members.length > 0 && !isAuto) {
                 valid = d.members.find(m => String(m.nick)===nick && String(m.key)===key);
             }
+
             if(valid) {
+                // 로그인 성공 시 세션 저장 (현재시간 + 타임아웃)
                 localStorage.setItem("guildWarNick", nick);
+                refreshSession(); // 시간 설정
+
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('mainArea').classList.remove('hidden');
                 renderDropdowns();
-            } else { msg.innerText = "불일치"; msg.style.color = "red"; }
+            } else {
+                msg.innerText = "불일치"; msg.style.color = "red";
+            }
         }).catch(e=>{ msg.innerText="통신오류"; });
     }
 
@@ -409,7 +466,6 @@
             list.forEach((s,i)=>{
                 let icons="";
                 s.attack.split(',').forEach(k=>{
-                    // 이름 추출 (괄호 앞부분)
                     const firstParen = k.indexOf('(');
                     const name = firstParen > 0 ? k.substring(0, firstParen).trim() : k.trim();
                     icons+=`<div class="strategy-icon"><img src="images/${name}.png" onerror="this.style.display='none';"></div>`;
@@ -432,7 +488,6 @@
             if(i>=5) return;
             const firstParen = p.indexOf('(');
             const lastParen = p.lastIndexOf(')');
-
             if(firstParen > 0 && lastParen > firstParen) {
                 myDeckState[i].name = p.substring(0, firstParen).trim();
                 const content = p.substring(firstParen + 1, lastParen);
@@ -457,72 +512,79 @@
 
         renderInteractiveDeck('myBattle');
         document.querySelector('.neon-purple').scrollIntoView({behavior:'smooth'});
+        refreshSession(); // 활동 감지
     }
 
-    // --- 비동기 전송 (새로고침 방지) ---
+    // --- 비동기 전송 (깜빡임 해결) ---
+    function sendData(payload, successCallback) {
+        const btn = event.target;
+        const originalText = btn.innerText;
+        btn.disabled = true; btn.innerText = "처리 중...";
+
+        fetch(GAS_URL, {
+            method: "POST", mode: "no-cors", headers: {"Content-Type":"application/json"},
+            body: JSON.stringify(payload)
+        }).then(() => {
+            // 성공 시 수행할 콜백 함수 실행
+            if(successCallback) successCallback();
+
+            refreshSession(); // 활동으로 간주하여 세션 연장
+            btn.disabled = false; btn.innerText = originalText;
+        }).catch(err => {
+            alert("전송 오류");
+            btn.disabled = false; btn.innerText = originalText;
+        });
+    }
+
     function addStrategy() {
         const t=document.getElementById('targetEnemySelect').value, d=document.getElementById('newAttackDeckResult').value;
-        const pet=document.getElementById('newAttackPetResult').value, form=document.getElementById('newFormation').value;
-        const items=document.getElementById('newKeyItems').value, note=document.getElementById('newStrategyNote').value;
-        const auth=document.getElementById('myNick').value;
+        const p=document.getElementById('newAttackPetResult').value, f=document.getElementById('newFormation').value;
+        const i=document.getElementById('newKeyItems').value, n=document.getElementById('newStrategyNote').value;
+        const a=document.getElementById('myNick').value;
 
-        if(!t||!d) return alert("입력 누락");
-        const btn=event.target; btn.disabled=true; btn.innerText="저장 중...";
+        if(!t||!d) return alert("필수 입력 누락");
 
-        const payload = {
-            action: "add_strategy", targetEnemy:t, attackDeck:d, pet:pet, formation:form, keyItems:items, note:note, author:auth
-        };
+        sendData({
+            action: "add_strategy", targetEnemy:t, attackDeck:d, pet:p, formation:f, keyItems:i, note:n, author:a
+        }, () => {
+            alert("공략 등록 완료!");
+            // 로컬 데이터에 즉시 추가 (새로고침 없이 반영)
+            globalData.strategies.push({target:t, attack:d, pet:p, formation:f, items:i, note:n, author:a});
+            // 현재 화면이 해당 적을 보고 있다면 바로 갱신
+            if(document.getElementById('enemySelect').value === t) selectEnemy();
 
-        fetch(GAS_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify(payload)})
-            .then(()=>{
-                // 로컬 데이터 갱신
-                globalData.strategies.push({target:t, attack:d, pet:pet, formation:form, items:items, note:note, author:auth});
-                if(document.getElementById('enemySelect').value === t) selectEnemy();
-
-                // 입력 초기화
-                document.getElementById('newKeyItems').value=""; document.getElementById('newStrategyNote').value="";
-                adminDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
-                adminPetState = "";
-                renderInteractiveDeck('attack');
-
-                alert("공략 등록 완료");
-                btn.disabled=false; btn.innerText="공략 등록 완료";
-            });
+            // 입력창 초기화
+            document.getElementById('newKeyItems').value=""; document.getElementById('newStrategyNote').value="";
+            adminDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
+            adminPetState = "";
+            renderInteractiveDeck('attack');
+        });
     }
 
     function addNewEnemy() {
         const n=document.getElementById('newEnemyName').value, d=document.getElementById('newEnemyDeckResult').value;
         if(!n||!d) return alert("입력 누락");
-        const btn=event.target; btn.disabled=true; btn.innerText="저장 중...";
 
-        fetch(GAS_URL, {method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"}, body:JSON.stringify({action:"add_enemy", enemyName:n, defenseDeck:d})})
-            .then(()=>{
-                globalData.enemies.push({name:n, deck:d});
-                renderDropdowns();
-
-                document.getElementById('newEnemyName').value="";
-                tempEnemyHeroes=[]; updateEnemyPrev();
-
-                alert("적군 등록 완료");
-                btn.disabled=false; btn.innerText="적군 등록 완료";
-            });
+        sendData({action:"add_enemy", enemyName:n, defenseDeck:d}, () => {
+            alert("적군 등록 완료!");
+            globalData.enemies.push({name:n, deck:d});
+            renderDropdowns();
+            // 입력창 초기화
+            document.getElementById('newEnemyName').value="";
+            tempEnemyHeroes=[]; updateEnemyPrev();
+        });
     }
 
     function record(r) {
         const t=document.getElementById('enemySelect').value, d=document.getElementById('myBattleDeckResult').value;
-        if(!t||!d) return alert("입력 누락");
-        const btn=event.target; btn.disabled=true; btn.innerText="기록 중...";
+        if(!t||!d) return alert("필수 정보 누락");
 
-        fetch(GAS_URL, {
-            method:"POST", mode:"no-cors", headers:{"Content-Type":"application/json"},
-            body: JSON.stringify({
-                action: "record", nickname:document.getElementById('myNick').value, enemyName:t,
-                enemyDeck:document.getElementById('currentEnemyDeck').value, myDeck:d,
-                pet:document.getElementById('myBattlePetResult').value, formation:document.getElementById('myFormation').value, result:r
-            })
-        }).then(()=>{
-            alert("기록 완료");
-            btn.disabled=false; btn.innerText=r==='WIN'?"⭐⭐⭐ 승리":"❌ 패배";
+        sendData({
+            action: "record", nickname:document.getElementById('myNick').value, enemyName:t,
+            enemyDeck:document.getElementById('currentEnemyDeck').value, myDeck:d,
+            pet:document.getElementById('myBattlePetResult').value, formation:document.getElementById('myFormation').value, result:r
+        }, () => {
+            alert("기록 완료!");
         });
     }
 
