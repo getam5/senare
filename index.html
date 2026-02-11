@@ -3,137 +3,256 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>길드전 가이드</title>
+    <title>길드전 통합 시스템</title>
     <style>
-        /* 다크 네온 스타일 (이미지 참고) */
-        body { background-color: #121212; color: #fff; font-family: sans-serif; text-align: center; }
-        .container { max-width: 400px; margin: 0 auto; padding: 20px; }
-        .box {
-            border: 2px solid #333; border-radius: 10px; padding: 20px; margin-bottom: 20px;
-            box-shadow: 0 0 10px rgba(0,0,0,0.5);
-        }
-        .neon-blue { border-color: #00ffff; box-shadow: 0 0 10px #00ffff; }
-        .neon-green { border-color: #00ff00; box-shadow: 0 0 10px #00ff00; }
-        .neon-red { border-color: #ff0000; box-shadow: 0 0 10px #ff0000; }
+        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; text-align: center; padding-bottom: 50px;}
+        .container { max-width: 420px; margin: 0 auto; padding: 15px; }
 
-        input, select, textarea {
-            width: 90%; padding: 10px; margin: 5px 0; background: #222; border: 1px solid #555; color: white;
+        /* 네온 박스 스타일 */
+        .box {
+            background: #1e1e1e; border: 1px solid #333; border-radius: 12px;
+            padding: 20px; margin-bottom: 25px; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
         }
+        .neon-blue { border-left: 5px solid #00ffff; }
+        .neon-green { border-left: 5px solid #00ff00; }
+        .neon-red { border-left: 5px solid #ff4444; }
+        .neon-purple { border-left: 5px solid #d500f9; }
+
+        h3 { margin-top: 0; color: #fff; }
+
+        /* 입력 폼 스타일 */
+        input, select, textarea {
+            width: 90%; padding: 12px; margin: 8px 0;
+            background: #2c2c2c; border: 1px solid #444; color: white; border-radius: 5px;
+        }
+
+        /* 버튼 스타일 */
         button {
-            width: 100%; padding: 10px; background: #333; color: white; border: none; cursor: pointer; font-weight: bold;
+            width: 100%; padding: 12px; margin-top: 5px;
+            background: #333; color: white; border: none; border-radius: 5px;
+            font-weight: bold; cursor: pointer; transition: 0.3s;
         }
         button:hover { background: #555; }
+        .btn-small { width: auto; padding: 8px 15px; font-size: 0.9em; margin: 5px; }
+
         .hidden { display: none; }
+        .loading { color: #888; font-size: 0.9em; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>🔥 길드전 가이드</h1>
+    <h2>⚔️ 길드전 작전상황실</h2>
 
-    <div id="step1" class="box neon-blue">
-        <h3>1. 로그인</h3>
-        <input type="text" id="myNick" placeholder="본인 닉네임">
-        <input type="password" id="myKey" placeholder="발급받은 키">
-        <button onclick="login()">로그인</button>
+    <div id="loginArea" class="box neon-blue">
+        <h3>🔐 로그인</h3>
+        <input type="text" id="myNick" placeholder="닉네임">
+        <button onclick="login()">접속하기</button>
     </div>
 
     <div id="mainArea" class="hidden">
 
-        <div id="step2" class="box neon-green">
-            <h3>2. 공격 대상 선택</h3>
-            <select id="enemySelect" onchange="loadStrategy()">
-                <option value="">-- 상대 방어팀 선택 --</option>
-                <option value="Enemy_Ace">에이스 (방어덱: 루디/델론즈)</option>
-                <option value="Enemy_Evan">에반 (방어덱: 제이브/아일린)</option>
+        <div class="box neon-green">
+            <h3>🎯 타겟 설정</h3>
+            <p id="loadingMsg" class="loading">데이터 불러오는 중...</p>
+            <select id="enemySelect" onchange="showStrategy()">
+                <option value="">-- 상대를 선택하세요 --</option>
             </select>
+            <div id="enemyDeckInfo" style="color:#aaa; font-size:0.9em; margin-top:5px;"></div>
         </div>
 
-        <div id="step3" class="box" style="border-color: gold; box-shadow: 0 0 10px gold;">
-            <h3>3. 추천 세팅</h3>
-            <div id="strategyDisplay">대상을 선택하면 공략이 뜹니다.</div>
+        <div id="strategyBox" class="box" style="border-left: 5px solid gold;">
+            <h3>💡 추천 공략</h3>
+            <div id="strategyDisplay" style="text-align: left; padding: 10px; background:#252525; border-radius:5px;">
+                타겟을 선택하면 공략이 표시됩니다.
+            </div>
         </div>
 
-        <div id="step4" class="box neon-red">
-            <h3>4. 결과 기록</h3>
-            <button onclick="recordResult('WIN')" style="background:#00aa00; margin-bottom:5px;">승리 (3별)</button>
-            <button onclick="recordResult('LOSE')" style="background:#aa0000;">패배</button>
+        <div class="box neon-red">
+            <h3>📝 결과 보고</h3>
+            <button onclick="record('WIN')" style="background:#2e7d32;">⭐⭐⭐ 완파 (승리)</button>
+            <button onclick="record('LOSE')" style="background:#c62828;">❌ 실패 (패배)</button>
         </div>
 
-        <div id="step5" class="box" style="border-color: purple; box-shadow: 0 0 10px purple;">
-            <h3>5. 공략 제보</h3>
-            <textarea id="reportComment" placeholder="나만의 꿀팁 제보하기"></textarea>
-            <button onclick="report()">제보하기</button>
+        <hr style="border-color:#333; margin: 30px 0;">
+
+        <button onclick="toggleAdmin()" style="background:#444;">🛠️ 전략가 모드 (덱 추가/공략 작성)</button>
+
+        <div id="adminArea" class="hidden" style="margin-top:20px;">
+
+            <div class="box neon-purple">
+                <h3>👾 신규 적군 등록</h3>
+                <input type="text" id="newEnemyName" placeholder="적 닉네임 (예: 랭커1)">
+                <input type="text" id="newEnemyDeck" placeholder="방어덱 (예: 에반/제이브/스파)">
+                <button onclick="addNewEnemy()">적군 등록</button>
+            </div>
+
+            <div class="box neon-purple">
+                <h3>📜 공략법 추가</h3>
+                <select id="targetEnemySelect">
+                    <option value="">-- 공략할 대상 선택 --</option>
+                </select>
+                <input type="text" id="newAttackDeck" placeholder="추천 공격덱 (예: 린 마공덱)">
+                <textarea id="newStrategyNote" placeholder="상세 공략 (펫, 진형, 주의사항 등)"></textarea>
+                <button onclick="addStrategy()">공략 등록</button>
+            </div>
         </div>
 
     </div>
 </div>
 
 <script>
-    // 아까 배포한 Google Apps Script URL을 여기에 넣으세요
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbyDHVwpbFVz7jJzv5v40tgV-32IRiVRrjnFxcrx6elyeyCPraurebHzQQziVAuBZd64/exec";
+    // 배포한 Apps Script URL을 여기에 넣으세요!
+    const GAS_URL = "https://script.google.com/macros/s/AKfycbxz_Y0rXv7uAJ1cdoxyn_pka8lFyee-VqhQbxUlx2WxGc_2i_OcxWBtLQdAY4iYBbP0/exec";
+
     let currentUser = "";
+    let globalData = { enemies: [], strategies: [] }; // 데이터를 담아둘 전역 변수
 
     function login() {
         const nick = document.getElementById('myNick').value;
-        const key = document.getElementById('myKey').value;
+        if (!nick) return alert("닉네임을 입력하세요.");
 
-        // 실제로는 fetch로 서버 검증을 해야 하지만, UI 테스트를 위해 간단히 처리
-        if(nick && key) {
-            // fetch(GAS_URL, { ... }) // 실제 구현 시 여기서 통신
-            currentUser = nick;
-            alert(nick + "님 환영합니다!");
-            document.getElementById('step1').classList.add('hidden');
-            document.getElementById('mainArea').classList.remove('hidden');
+        currentUser = nick;
+        document.getElementById('loginArea').classList.add('hidden');
+        document.getElementById('mainArea').classList.remove('hidden');
+
+        // 로그인 성공 시 데이터 로드
+        loadData();
+    }
+
+    // 1. 초기 데이터 로드 (GET 요청)
+    function loadData() {
+        fetch(GAS_URL)
+            .then(response => response.json())
+            .then(data => {
+                globalData = data;
+                renderDropdowns();
+                document.getElementById('loadingMsg').classList.add('hidden');
+            })
+            .catch(error => alert("데이터 로드 실패: " + error));
+    }
+
+    // 2. 드롭다운 메뉴 그리기
+    function renderDropdowns() {
+        const select = document.getElementById('enemySelect');
+        const adminSelect = document.getElementById('targetEnemySelect');
+
+        // 기존 옵션 초기화
+        select.innerHTML = '<option value="">-- 상대를 선택하세요 --</option>';
+        adminSelect.innerHTML = '<option value="">-- 공략할 대상 선택 --</option>';
+
+        globalData.enemies.forEach(enemy => {
+            // 메인 화면 선택창
+            let option = document.createElement("option");
+            option.value = enemy.name;
+            option.text = enemy.name;
+            select.add(option);
+
+            // 관리자 화면 선택창
+            let adminOption = document.createElement("option");
+            adminOption.value = enemy.name;
+            adminOption.text = enemy.name;
+            adminSelect.add(adminOption);
+        });
+    }
+
+    // 3. 선택 시 공략 보여주기
+    function showStrategy() {
+        const selectedName = document.getElementById('enemySelect').value;
+        const display = document.getElementById('strategyDisplay');
+        const deckInfo = document.getElementById('enemyDeckInfo');
+
+        // 1) 적군 방어덱 정보 표시
+        const enemyObj = globalData.enemies.find(e => e.name === selectedName);
+        if (enemyObj) {
+            deckInfo.innerText = "🛡️ 방어덱: " + enemyObj.deck;
         } else {
-            alert("정보를 입력하세요.");
+            deckInfo.innerText = "";
+            display.innerText = "타겟을 선택하면 공략이 표시됩니다.";
+            return;
+        }
+
+        // 2) 매칭되는 공략 찾기
+        const strategies = globalData.strategies.filter(s => s.target === selectedName);
+
+        if (strategies.length > 0) {
+            let html = "";
+            strategies.forEach(s => {
+                html += `<div style="margin-bottom:10px; border-bottom:1px solid #444; padding-bottom:5px;">
+                            <b>⚔️ 추천: ${s.attack}</b><br>
+                            <span style="color:#bbb; font-size:0.9em;">Tip: ${s.note}</span>
+                         </div>`;
+            });
+            display.innerHTML = html;
+        } else {
+            display.innerHTML = "❌ 등록된 공략이 없습니다. 전략가 모드에서 추가해주세요!";
         }
     }
 
-    function loadStrategy() {
-        const enemy = document.getElementById('enemySelect').value;
-        const display = document.getElementById('strategyDisplay');
+    // 4. 신규 적군 추가 (POST)
+    function addNewEnemy() {
+        const name = document.getElementById('newEnemyName').value;
+        const deck = document.getElementById('newEnemyDeck').value;
 
-        // 예시 데이터 (실제로는 fetch로 GAS에서 받아옴)
-        if(enemy === "Enemy_Ace") display.innerHTML = "💡 <b>추천:</b> 마공 덱 사용 (린 포함 필수)<br>⚠️ 주의: 상태이상 면역 챙기기";
-        else if(enemy === "Enemy_Evan") display.innerHTML = "💡 <b>추천:</b> 물공 덱 사용 (제이브 카운터)";
-        else display.innerHTML = "대상을 선택하세요.";
+        if(!name || !deck) return alert("정보를 모두 입력하세요.");
+
+        sendData({
+            action: "add_enemy",
+            enemyName: name,
+            defenseDeck: deck
+        }, "적군이 등록되었습니다! (새로고침 시 목록 갱신)");
     }
 
-    function recordResult(result) {
-        const enemy = document.getElementById('enemySelect').value;
-        if(!enemy) return alert("상대를 먼저 선택하세요.");
+    // 5. 공략 추가 (POST)
+    function addStrategy() {
+        const target = document.getElementById('targetEnemySelect').value;
+        const deck = document.getElementById('newAttackDeck').value;
+        const note = document.getElementById('newStrategyNote').value;
 
-        // Google Apps Script로 데이터 전송
-        const data = { action: "record", nickname: currentUser, enemyName: enemy, result: result };
+        if(!target || !deck) return alert("대상과 공격덱은 필수입니다.");
 
-        // no-cors 모드는 응답을 읽을 수 없지만 전송은 됨 (간편 구현용)
+        sendData({
+            action: "add_strategy",
+            targetEnemy: target,
+            attackDeck: deck,
+            note: note,
+            author: currentUser
+        }, "공략이 등록되었습니다!");
+    }
+
+    // 6. 결과 기록 (POST)
+    function record(result) {
+        const target = document.getElementById('enemySelect').value;
+        if(!target) return alert("대상을 선택하세요.");
+
+        sendData({
+            action: "record",
+            nickname: currentUser,
+            enemyName: target,
+            result: result
+        }, "전투 결과 기록 완료!");
+    }
+
+    // 데이터 전송 공통 함수
+    function sendData(payload, successMsg) {
         fetch(GAS_URL, {
             method: "POST",
             mode: "no-cors",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
+            body: JSON.stringify(payload)
         }).then(() => {
-            alert("결과가 기록되었습니다: " + result);
+            alert(successMsg);
+            // 입력창 초기화
+            if(payload.action === "add_enemy") {
+                document.getElementById('newEnemyName').value = "";
+                document.getElementById('newEnemyDeck').value = "";
+            }
         });
     }
 
-    function report() {
-        const enemy = document.getElementById('enemySelect').value;
-        const comment = document.getElementById('reportComment').value;
-        if(!enemy || !comment) return alert("상대 선택 및 내용을 입력하세요.");
-
-        const data = { action: "report", nickname: currentUser, enemyName: enemy, comment: comment };
-
-        fetch(GAS_URL, {
-            method: "POST",
-            mode: "no-cors",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(data)
-        }).then(() => {
-            alert("제보 감사합니다!");
-            document.getElementById('reportComment').value = "";
-        });
+    function toggleAdmin() {
+        const el = document.getElementById('adminArea');
+        el.classList.toggle('hidden');
     }
 </script>
 
