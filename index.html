@@ -3,87 +3,133 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>길드전 작전상황실 Final v3</title>
+    <title>작전상황실</title>
     <script src="gamedata.js"></script>
     <style>
-        /* --- 기본 스타일 (다크 모드) --- */
-        body { background-color: #121212; color: #e0e0e0; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding-bottom: 100px; }
+        /* --- 기본 스타일 --- */
+        body { background-color: #1e2330; color: #d8dce6; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding-bottom: 100px; }
         .container { max-width: 600px; margin: 0 auto; padding: 15px; }
 
-        .box { background: #1e1e1e; border: 1px solid #333; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
-        .neon-blue { border-left: 4px solid #00ffff; }
-        .neon-green { border-left: 4px solid #00ff00; }
-        .neon-purple { border-left: 4px solid #d500f9; }
-        .neon-red { border-left: 4px solid #ff4444; }
+        .box { background: #2a3040; border: 1px solid #3d4a5c; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .neon-blue { border-left: 4px solid #5ba8c8; }
+        .neon-green { border-left: 4px solid #6bbd7a; }
+        .neon-purple { border-left: 4px solid #a87ccf; }
+        .neon-red { border-left: 4px solid #d47474; }
 
-        input, select, textarea { width: 95%; padding: 12px; margin: 5px 0; background: #2c2c2c; border: 1px solid #444; color: white; border-radius: 6px; font-size: 14px; }
-        button { width: 100%; padding: 12px; margin-top: 5px; background: #333; color: white; border: 1px solid #444; border-radius: 6px; font-weight: bold; cursor: pointer; }
-        button:disabled { color: #555; border-color: #333; cursor: not-allowed; }
+        input, select, textarea { width: 95%; padding: 12px; margin: 5px 0; background: #354050; border: 1px solid #4d5a6e; color: #e0e4ec; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; padding: 12px; margin-top: 5px; background: #3a4758; color: #e0e4ec; border: 1px solid #4d5a6e; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        button:disabled { color: #6a7080; border-color: #3d4a5c; cursor: not-allowed; }
         .hidden { display: none; }
 
         /* --- 덱 컨테이너 --- */
         .deck-container {
             display: flex; gap: 6px; justify-content: flex-start; align-items: flex-start;
-            background: #252525; padding: 10px; border-radius: 8px; margin: 10px 0;
+            background: #323d50; padding: 10px; border-radius: 8px; margin: 10px 0;
             overflow-x: auto; min-height: 120px;
         }
 
-        .hero-card { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; background: #202020; border-radius: 8px; padding: 5px; border: 1px solid #333; }
-        .hero-slot { width: 50px; height: 50px; border-radius: 50%; background: #444; border: 2px solid #555; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; margin-bottom: 5px; }
+        .hero-card { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; background: #2a3444; border-radius: 8px; padding: 5px; border: 1px solid #3d4a5c; }
+        .hero-slot { width: 50px; height: 50px; border-radius: 50%; background: #4a5568; border: 2px solid #5f6d82; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; margin-bottom: 5px; }
         .hero-slot img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
 
         .equipment-grid { display: grid; width: 100%; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; grid-template-areas: "w1 a1 acc" "w2 a2 acc"; }
-        .gear-slot, .acc-slot { background: #333; border: 1px solid #444; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #ccc; cursor: pointer; text-align: center; line-height: 1.1; padding: 2px; word-break: keep-all; }
-        .slot-w1 { grid-area: w1; border-color: #552222; color: #ffcccc; height: 24px; }
-        .slot-a1 { grid-area: a1; border-color: #222255; color: #ccccff; height: 24px; }
-        .slot-w2 { grid-area: w2; border-color: #552222; color: #ffcccc; height: 24px; }
-        .slot-a2 { grid-area: a2; border-color: #222255; color: #ccccff; height: 24px; }
-        .acc-slot { grid-area: acc; border-color: #554400; color: #ffffcc; height: 50px; writing-mode: horizontal-tb; }
+        .gear-slot, .acc-slot { background: #3a4758; border: 1px solid #4d5a6e; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #c0c8d8; cursor: pointer; text-align: center; line-height: 1.1; padding: 2px; word-break: keep-all; }
+        .slot-w1 { grid-area: w1; border-color: #7a4a4a; color: #f0c0c0; height: 24px; }
+        .slot-a1 { grid-area: a1; border-color: #4a4a7a; color: #c0c0f0; height: 24px; }
+        .slot-w2 { grid-area: w2; border-color: #7a4a4a; color: #f0c0c0; height: 24px; }
+        .slot-a2 { grid-area: a2; border-color: #4a4a7a; color: #c0c0f0; height: 24px; }
+        .acc-slot { grid-area: acc; border-color: #7a6a3a; color: #f0e8c0; height: 50px; writing-mode: horizontal-tb; }
 
-        .pet-wrapper { margin-left: 5px; padding-left: 5px; border-left: 1px solid #444; display:flex; align-items:center; }
-        .pet-slot { width: 45px; height: 45px; border-radius: 8px; background: #333; border: 2px dashed #666; overflow: hidden; display:flex; align-items:center; justify-content:center; cursor: pointer; font-size: 10px; color: #888; text-align: center; }
+        .pet-wrapper { margin-left: 5px; padding-left: 5px; border-left: 1px solid #4d5a6e; display:flex; align-items:center; }
+        .pet-slot { width: 45px; height: 45px; border-radius: 8px; background: #3a4758; border: 2px dashed #5f6d82; overflow: hidden; display:flex; align-items:center; justify-content:center; cursor: pointer; font-size: 10px; color: #8090a8; text-align: center; }
         .pet-slot img { width: 100%; height: 100%; object-fit: cover; }
 
         /* 공략 카드 */
-        .strategy-card { background: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; text-align: left; }
+        .strategy-card { background: #323d50; border: 1px solid #4d5a6e; border-radius: 8px; padding: 12px; margin-bottom: 10px; cursor: pointer; text-align: left; }
         .strategy-deck-preview { display: flex; gap: 4px; margin: 8px 0; flex-wrap: wrap; }
-        .strategy-icon { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #666; overflow: hidden; background: #333; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #aaa; }
+        .strategy-icon { width: 32px; height: 32px; border-radius: 50%; border: 1px solid #5f6d82; overflow: hidden; background: #3a4758; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #a0a8b8; }
         .strategy-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
 
-        #activeStrategyNote { background: #333; color: #ffd700; border: 1px solid gold; padding: 10px; margin-bottom: 10px; border-radius: 6px; text-align: left; font-size: 0.9em; display: none; }
+        #activeStrategyNote { background: #3a4758; color: #f0d060; border: 1px solid #c8a840; padding: 10px; margin-bottom: 10px; border-radius: 6px; text-align: left; font-size: 0.9em; display: none; }
 
         /* 모달 */
-        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.9); align-items: center; justify-content: center; }
-        .modal-content { background-color: #1e1e1e; padding: 15px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid #444; }
+        .modal { display: none; position: fixed; z-index: 1000; left: 0; top: 0; width: 100%; height: 100%; background-color: rgba(15,20,30,0.85); align-items: center; justify-content: center; }
+        .modal-content { background-color: #2a3040; padding: 15px; border-radius: 12px; width: 90%; max-width: 450px; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid #4d5a6e; }
         .hero-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; overflow-y: auto; padding: 10px; align-content: start; }
         .hero-item { display: flex; flex-direction: column; align-items: center; cursor: pointer; }
-        .hero-circle { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #555; overflow: hidden; background: #333; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #aaa; }
+        .hero-circle { width: 48px; height: 48px; border-radius: 50%; border: 2px solid #5f6d82; overflow: hidden; background: #3a4758; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #a0a8b8; }
         .hero-circle img { width: 100%; height: 100%; object-fit: cover; object-position: top 15%; }
-        .hero-name { font-size: 11px; color: #ccc; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50px;}
+        .hero-name { font-size: 11px; color: #c0c8d8; margin-top: 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 50px;}
 
         .gear-modal-grid { display: flex; gap: 5px; height: 300px; }
-        .gear-col { flex: 1; overflow-y: auto; background: #222; border: 1px solid #444; border-radius: 4px; display:flex; flex-direction:column;}
-        .gear-btn, .acc-btn { padding: 12px; background: transparent; color: #aaa; border: none; border-bottom: 1px solid #333; text-align: left; cursor: pointer; }
-        .gear-btn.selected { background: #004d40; color: #fff; font-weight: bold; }
+        .gear-col { flex: 1; overflow-y: auto; background: #2a3444; border: 1px solid #4d5a6e; border-radius: 4px; display:flex; flex-direction:column;}
+        .gear-btn, .acc-btn { padding: 12px; background: transparent; color: #a0a8b8; border: none; border-bottom: 1px solid #3d4a5c; text-align: left; cursor: pointer; }
+        .gear-btn.selected { background: #2a6058; color: #fff; font-weight: bold; }
         .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; overflow-y: auto; max-height: 300px; margin-top:10px;}
-        .acc-btn { border:1px solid #444; background:#333; border-radius:4px; text-align:center;}
+        .acc-btn { border:1px solid #4d5a6e; background:#3a4758; border-radius:4px; text-align:center;}
+
+        /* --- 탭 네비게이션 --- */
+        .tab-nav { display: flex; gap: 0; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5a6e; }
+        .tab-btn { flex: 1; padding: 14px; background: #2a3040; color: #8090a8; border: none; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .tab-btn.active { background: #3a4758; color: #f0d060; border-bottom: 3px solid #f0d060; }
+
+        /* --- 공성전 스킬 버튼 --- */
+        .skill-btns { display: flex; gap: 2px; margin-top: 3px; width: 100%; }
+        .skill-btn { flex: 1; padding: 4px 2px; font-size: 9px; font-weight: bold; border-radius: 3px; border: 1px solid #5f6d82; background: #323d50; color: #a0a8b8; cursor: pointer; text-align: center; width: auto; }
+        .skill-btn:hover { background: #4a5568; color: #fff; }
+        .skill-btn.s1 { border-color: #c89840; color: #f0c860; }
+        .skill-btn.s2 { border-color: #4090c0; color: #60b8e8; }
+
+        /* --- 스킬 파이프라인 --- */
+        .pipeline-area { background: #253040; border: 1px solid #4d5a6e; border-radius: 8px; padding: 12px; margin-top: 10px; }
+        .pipeline-display { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 36px; padding: 8px; background: #1e2830; border-radius: 6px; }
+        .pipeline-item { display: inline-flex; align-items: center; gap: 3px; background: #2e3a50; border: 1px solid #5f6d82; border-radius: 4px; padding: 4px 8px; font-size: 11px; color: #d8dce6; }
+        .pipeline-item .pi-icon { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
+        .pipeline-item .pi-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
+        .pipeline-item.s1 { border-color: #c89840; }
+        .pipeline-item.s2 { border-color: #4090c0; }
+        .pipeline-arrow { color: #6a7a90; font-size: 14px; }
+        .pipeline-controls { display: flex; gap: 8px; margin-top: 8px; }
+        .pipeline-controls button { width: auto; flex: 1; padding: 8px; font-size: 12px; }
+
+        /* --- 요일 선택 --- */
+        .day-nav { display: flex; gap: 4px; margin-bottom: 12px; }
+        .day-btn { flex: 1; padding: 10px 4px; background: #323d50; color: #8090a8; border: 1px solid #4d5a6e; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .day-btn.active { background: #a87ccf; color: #fff; border-color: #a87ccf; }
+        .day-btn.sat { }
+        .day-btn.sun { }
+        .day-btn.sat.active { background: #4090c0; border-color: #4090c0; }
+        .day-btn.sun.active { background: #d47474; border-color: #d47474; }
+
+        /* --- 파괴신 사황 선택 --- */
+        .sahwang-nav { display: flex; gap: 6px; margin-bottom: 12px; }
+        .sahwang-btn { flex: 1; padding: 10px 4px; background: #323d50; color: #8090a8; border: 2px solid #4d5a6e; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .sahwang-btn .sh-icon { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid #5f6d82; }
+        .sahwang-btn .sh-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
+        .sahwang-btn.active { background: #4a3060; border-color: #a87ccf; color: #e0d0f0; }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2 style="color:gold; text-shadow:0 0 10px gold;">⚔️ 길드전 작전상황실</h2>
+    <h2 style="color:#f0d060; text-shadow:0 0 8px rgba(240,208,96,0.3);">⚔️ 작전상황실</h2>
 
     <div id="loginArea" class="box neon-blue">
         <h3>🔐 로그인</h3>
         <input type="text" id="myNick" placeholder="닉네임">
         <input type="password" id="myKey" placeholder="키 (비밀번호)">
-        <p id="loginMsg" style="color:#aaa; display:none;">접속 중...</p>
+        <p id="loginMsg" style="color:#8090a8; display:none;">접속 중...</p>
         <button onclick="tryLogin()">접속하기</button>
     </div>
 
     <div id="mainArea" class="hidden">
 
+        <div class="tab-nav">
+            <button class="tab-btn active" onclick="switchTab('guild')">길드전</button>
+            <button class="tab-btn" onclick="switchTab('siege')">공성전</button>
+        </div>
+
+        <div id="guildWarTab">
         <div class="box neon-green">
             <h3>1. 타겟 및 공략 확인</h3>
             <select id="enemySelect" onchange="selectEnemy()">
@@ -91,7 +137,7 @@
             </select>
 
             <div id="enemyDeckVisual" class="deck-container" style="justify-content: center; min-height: 60px;">
-                <span style="color:#666; line-height:60px;">상대 정보 대기 중</span>
+                <span style="color:#5f6d82; line-height:60px;">상대 정보 대기 중</span>
             </div>
             <input type="hidden" id="currentEnemyDeck">
 
@@ -114,12 +160,12 @@
         <div class="box neon-red">
             <h3>3. 결과 기록</h3>
             <div style="display:flex; gap:10px;">
-                <button onclick="record('WIN')" style="background:#2e7d32;">⭐⭐⭐ 승리</button>
-                <button onclick="record('LOSE')" style="background:#c62828;">❌ 패배</button>
+                <button onclick="record('WIN')" style="background:#3a7a50;">⭐⭐⭐ 승리</button>
+                <button onclick="record('LOSE')" style="background:#8a4040;">❌ 패배</button>
             </div>
         </div>
 
-        <button onclick="toggleAdmin()" style="background:#444; margin-top:20px;">🛠️ 관리자 모드</button>
+        <button onclick="toggleAdmin()" style="background:#3a4758; margin-top:20px;">🛠️ 관리자 모드</button>
 
         <div id="adminArea" class="hidden" style="margin-top:20px;">
             <div class="box neon-blue">
@@ -144,6 +190,49 @@
                 <button onclick="addNewEnemy()">적군 등록 완료</button>
             </div>
         </div>
+        </div><!-- /guildWarTab -->
+
+        <div id="siegeWarTab" class="hidden">
+
+        <div class="day-nav">
+            <button class="day-btn" onclick="switchSiegeDay('mon')">월</button>
+            <button class="day-btn" onclick="switchSiegeDay('tue')">화</button>
+            <button class="day-btn" onclick="switchSiegeDay('wed')">수</button>
+            <button class="day-btn" onclick="switchSiegeDay('thu')">목</button>
+            <button class="day-btn" onclick="switchSiegeDay('fri')">금</button>
+            <button class="day-btn sat" onclick="switchSiegeDay('sat')">토</button>
+            <button class="day-btn sun" onclick="switchSiegeDay('sun')">일</button>
+        </div>
+
+        <div class="box neon-purple">
+            <h3 id="siegeDayTitle">공성전 팀 구성</h3>
+            <div class="info-row">
+                <select id="siegeFormation">
+                    <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                </select>
+                <input type="text" id="siegeKeyItems" placeholder="메모">
+            </div>
+            <div class="deck-container" id="siegeDeckContainer"></div>
+
+            <div class="pipeline-area">
+                <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
+                <div class="pipeline-display" id="pipelineDisplay">
+                    <span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span>
+                </div>
+                <div class="pipeline-controls">
+                    <button onclick="undoPipeline()" style="background:#4a5568;">되돌리기</button>
+                    <button onclick="clearPipeline()" style="background:#8a4040;">초기화</button>
+                </div>
+                <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
+                    <span style="font-size:11px; color:#8090a8;">결과: </span>
+                    <span id="pipelineText" style="font-size:11px; color:#6bbd7a;"></span>
+                </div>
+            </div>
+
+            <button onclick="saveSiege()" style="background:#3a7a50; margin-top:10px;">저장</button>
+        </div>
+        </div><!-- /siegeWarTab -->
+
     </div>
 </div>
 
@@ -152,7 +241,7 @@
         <h3 id="modalTitle">선택</h3>
         <input type="text" id="searchBox" onkeyup="filterItems()" placeholder="검색...">
         <div id="itemGrid" class="hero-grid"></div>
-        <button onclick="closeSelectorModal()" style="background:#c62828; margin-top:10px;">취소</button>
+        <button onclick="closeSelectorModal()" style="background:#8a4040; margin-top:10px;">취소</button>
     </div>
 </div>
 
@@ -163,10 +252,10 @@
             <div class="gear-col"><h4>세트</h4><div id="gearSetList"></div></div>
             <div class="gear-col"><h4>주옵션</h4><div id="gearOptionList"></div></div>
         </div>
-        <div style="padding:10px; background:#333; text-align:center;"><span id="gearPreviewText" style="color:#00ff00;">-</span></div>
+        <div style="padding:10px; background:#3a4758; text-align:center;"><span id="gearPreviewText" style="color:#6bbd7a;">-</span></div>
         <div style="display:flex; gap:10px; margin-top:10px;">
-            <button onclick="confirmGear()" style="background:#2e7d32;">확인</button>
-            <button onclick="closeGearModal()" style="background:#c62828;">취소</button>
+            <button onclick="confirmGear()" style="background:#3a7a50;">확인</button>
+            <button onclick="closeGearModal()" style="background:#8a4040;">취소</button>
         </div>
     </div>
 </div>
@@ -174,11 +263,11 @@
 <div id="accModal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0;">장신구 선택</h3>
-        <input type="text" id="customAccInput" placeholder="직접 입력" style="border:1px solid gold;">
-        <button onclick="confirmCustomAcc()" style="background:#444; border:1px solid gold;">입력 적용</button>
-        <hr style="width:100%; border-color:#444; margin:15px 0;">
+        <input type="text" id="customAccInput" placeholder="직접 입력" style="border:1px solid #c8a840;">
+        <button onclick="confirmCustomAcc()" style="background:#3a4758; border:1px solid #c8a840;">입력 적용</button>
+        <hr style="width:100%; border-color:#4d5a6e; margin:15px 0;">
         <div id="accList" class="acc-grid"></div>
-        <button onclick="closeAccModal()" style="background:#c62828; margin-top:15px;">취소</button>
+        <button onclick="closeAccModal()" style="background:#8a4040; margin-top:15px;">취소</button>
     </div>
 </div>
 
@@ -206,6 +295,17 @@
     let globalData = { members: [], enemies: [], strategies: [] };
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
 
+    // 공성전 변수
+    const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
+    const DAY_LABELS = {mon:'월',tue:'화',wed:'수',thu:'목',fri:'금',sat:'토',sun:'일'};
+    let currentSiegeDay = "";
+    let siegeData = {};
+    DAYS.forEach(d => { siegeData[d] = { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" }; });
+    // 현재 요일 활성 상태 (참조용)
+    let siegeDeckState = siegeData.mon.deck;
+    let siegePetState = "";
+    let skillPipeline = [];
+
     // --- 초기화 및 세션 체크 ---
     window.onload = function() {
         checkSession(); // 페이지 로드 시 세션 확인
@@ -217,6 +317,11 @@
 
         renderInteractiveDeck('myBattle');
         renderInteractiveDeck('attack');
+
+        // 오늘 요일 자동 선택 (JS: 0=일,1=월,...6=토)
+        const jsDay = new Date().getDay();
+        const dayMap = [6,0,1,2,3,4,5]; // JS요일→DAYS인덱스
+        switchSiegeDay(DAYS[dayMap[jsDay]]);
     };
 
     // 🕒 세션 확인 로직
@@ -282,8 +387,9 @@
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('mainArea').classList.remove('hidden');
                 renderDropdowns();
+                loadSiegeFromServer(nick);
             } else {
-                msg.innerText = "불일치"; msg.style.color = "red";
+                msg.innerText = "불일치"; msg.style.color = "#d47474";
             }
         }).catch(e=>{ msg.innerText="통신오류"; });
     }
@@ -382,12 +488,26 @@
         });
     }
     function filterItems() { renderItemGrid(document.getElementById('modalTitle').innerText.includes("영웅")?'HERO':'PET', document.getElementById('searchBox').value); }
+    function getDeckState(mode) {
+        if(mode==='myBattle') return myDeckState;
+        if(mode==='siege') return siegeDeckState;
+        return adminDeckState;
+    }
+    function renderDeckByMode(mode) {
+        if(mode==='siege') renderSiegeDeck();
+        else renderInteractiveDeck(mode);
+    }
+
     function confirmSel(type, val) {
         if(currentMode==='enemy') { if(tempEnemyHeroes.length>=5) return alert("5명까지"); tempEnemyHeroes.push(val); updateEnemyPrev(); }
         else {
-            if(type==='HERO') (currentMode==='myBattle'?myDeckState:adminDeckState)[tempHeroIndex].name=val;
-            else (currentMode==='myBattle'?myPetState=val:adminPetState=val);
-            renderInteractiveDeck(currentMode);
+            if(type==='HERO') getDeckState(currentMode)[tempHeroIndex].name=val;
+            else {
+                if(currentMode==='myBattle') myPetState=val;
+                else if(currentMode==='siege') siegePetState=val;
+                else adminPetState=val;
+            }
+            renderDeckByMode(currentMode);
         }
         closeSelectorModal();
     }
@@ -395,7 +515,7 @@
 
     // 장비
     function openGear(mode, idx, slot) {
-        const s = mode==='myBattle'?myDeckState:adminDeckState; if(!s[idx].name) return alert("영웅 먼저");
+        const s = getDeckState(mode); if(!s[idx].name) return alert("영웅 먼저");
         currentMode=mode; currentGearIndex=idx; currentGearSlot=slot; tempGearSet=""; tempGearOpt="";
         document.getElementById('gearPreviewText').innerText="-";
         const sd=document.getElementById('gearSetList'); sd.innerHTML="";
@@ -408,37 +528,37 @@
             const b=document.createElement('button'); b.className="gear-btn"; b.innerText=x;
             b.onclick=()=>{tempGearOpt=x; hl(od,b); upG();}; od.appendChild(b);
         });
-        const r=document.createElement('button'); r.className="gear-btn"; r.innerText="(해제)"; r.style.color="red";
+        const r=document.createElement('button'); r.className="gear-btn"; r.innerText="(해제)"; r.style.color="#d47474";
         r.onclick=()=>{tempGearSet="EMPTY"; confirmGear();}; od.appendChild(r);
         document.getElementById('gearModal').style.display='flex';
     }
     function hl(p,t) { Array.from(p.children).forEach(c=>c.classList.remove('selected')); t.classList.add('selected'); }
     function upG() { document.getElementById('gearPreviewText').innerText = `${tempGearSet}(${tempGearOpt})`; }
     function confirmGear() {
-        const s = currentMode==='myBattle'?myDeckState:adminDeckState;
+        const s = getDeckState(currentMode);
         if(tempGearSet==="EMPTY") s[currentGearIndex][currentGearSlot]="";
         else { if(!tempGearSet||!tempGearOpt) return alert("둘 다 선택"); s[currentGearIndex][currentGearSlot]=`${tempGearSet}(${tempGearOpt})`; }
-        renderInteractiveDeck(currentMode); closeGearModal();
+        renderDeckByMode(currentMode); closeGearModal();
     }
     function closeGearModal() { document.getElementById('gearModal').style.display='none'; }
 
     // 장신구
     function openAcc(mode, idx) {
-        const s=mode==='myBattle'?myDeckState:adminDeckState; if(!s[idx].name) return alert("영웅 먼저");
+        const s=getDeckState(mode); if(!s[idx].name) return alert("영웅 먼저");
         currentMode=mode; currentGearIndex=idx;
         const l=document.getElementById('accList'); l.innerHTML="";
         GEAR_ACCESSORIES.forEach(x=>{
             const b=document.createElement('button'); b.className="acc-btn"; b.innerText=x;
-            b.onclick=()=>{s[currentGearIndex].acc=x; renderInteractiveDeck(currentMode); closeAccModal();};
+            b.onclick=()=>{s[currentGearIndex].acc=x; renderDeckByMode(currentMode); closeAccModal();};
             l.appendChild(b);
         });
         const r=document.createElement('button'); r.className="acc-btn"; r.innerText="(해제)"; r.style.borderColor="red";
-        r.onclick=()=>{s[currentGearIndex].acc=""; renderInteractiveDeck(currentMode); closeAccModal();}; l.appendChild(r);
+        r.onclick=()=>{s[currentGearIndex].acc=""; renderDeckByMode(currentMode); closeAccModal();}; l.appendChild(r);
         document.getElementById('accModal').style.display='flex';
     }
     function confirmCustomAcc() {
         const v=document.getElementById('customAccInput').value; if(v) {
-            (currentMode==='myBattle'?myDeckState:adminDeckState)[currentGearIndex].acc=v; renderInteractiveDeck(currentMode); closeAccModal();
+            getDeckState(currentMode)[currentGearIndex].acc=v; renderDeckByMode(currentMode); closeAccModal();
         }
     }
     function closeAccModal() { document.getElementById('accModal').style.display='none'; }
@@ -449,13 +569,13 @@
         const v=document.getElementById('enemyDeckVisual');
         document.getElementById('activeStrategyNote').style.display = 'none';
 
-        if(!e) return v.innerHTML="<span style='color:#666;line-height:60px'>정보 없음</span>";
+        if(!e) return v.innerHTML="<span style='color:#5f6d82;line-height:60px'>정보 없음</span>";
         document.getElementById('currentEnemyDeck').value=e.deck;
 
         let h="";
         e.deck.split(',').forEach(x=>{
             const name=x.split('(')[0].trim();
-            h+=`<div class="hero-slot" style="margin:0 2px; border-color:#f55;"><img src="images/${name}.png" onerror="this.style.display='none';this.parentNode.innerText='${name[0]}'"></div>`;
+            h+=`<div class="hero-slot" style="margin:0 2px; border-color:#d47474;"><img src="images/${name}.png" onerror="this.style.display='none';this.parentNode.innerText='${name[0]}'"></div>`;
         });
         v.innerHTML=h;
 
@@ -471,13 +591,13 @@
                     icons+=`<div class="strategy-icon"><img src="images/${name}.png" onerror="this.style.display='none';"></div>`;
                 });
                 sh+=`<div class="strategy-card" onclick='applyStrategy(${JSON.stringify(s)})'>
-                        <div style="display:flex;justify-content:space-between;"><span style="color:gold">추천 #${i+1} (${s.formation})</span><span style="font-size:0.8em;color:#aaa">${s.pet}</span></div>
+                        <div style="display:flex;justify-content:space-between;"><span style="color:#f0d060">추천 #${i+1} (${s.formation})</span><span style="font-size:0.8em;color:#8090a8">${s.pet}</span></div>
                         <div class="strategy-deck-preview">${icons}</div>
-                        <div style="font-size:0.8em;color:#8f8">💡 ${s.items||""}</div>
+                        <div style="font-size:0.8em;color:#6bbd7a">💡 ${s.items||""}</div>
                      </div>`;
             });
             sb.innerHTML=sh;
-        } else sb.innerHTML="<p style='color:#666'>공략 없음</p>";
+        } else sb.innerHTML="<p style='color:#5f6d82'>공략 없음</p>";
     }
 
     function applyStrategy(s) {
@@ -595,6 +715,193 @@
 
     function toggleAdmin() { document.getElementById('adminArea').classList.toggle('hidden'); }
     function closeSelectorModal() { document.getElementById('selectorModal').style.display = 'none'; }
+
+    // --- 탭 전환 ---
+    function switchTab(tab) {
+        const btns = document.querySelectorAll('.tab-btn');
+        btns[0].classList.toggle('active', tab==='guild');
+        btns[1].classList.toggle('active', tab==='siege');
+        document.getElementById('guildWarTab').classList.toggle('hidden', tab!=='guild');
+        document.getElementById('siegeWarTab').classList.toggle('hidden', tab!=='siege');
+    }
+
+    // --- 요일 전환 ---
+    function saveCurrentDayState() {
+        if(!currentSiegeDay) return;
+        const sd = siegeData[currentSiegeDay];
+        sd.deck = siegeDeckState.map(o => ({...o}));
+        sd.pet = siegePetState;
+        sd.pipeline = skillPipeline.map(p => ({...p}));
+        sd.formation = document.getElementById('siegeFormation').value;
+        sd.memo = document.getElementById('siegeKeyItems').value;
+    }
+
+    function loadDayState(day) {
+        const sd = siegeData[day];
+        siegeDeckState = sd.deck;
+        siegePetState = sd.pet;
+        skillPipeline = sd.pipeline;
+        document.getElementById('siegeFormation').value = sd.formation || "기본";
+        document.getElementById('siegeKeyItems').value = sd.memo || "";
+        document.getElementById('siegeDayTitle').innerText = `공성전 팀 구성 (${DAY_LABELS[day]}요일)`;
+    }
+
+    function switchSiegeDay(day) {
+        saveCurrentDayState();
+        currentSiegeDay = day;
+        loadDayState(day);
+
+        document.querySelectorAll('.day-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', DAYS[i] === day);
+        });
+        renderSiegeDeck();
+        renderPipeline();
+    }
+
+    // --- 서버에서 공성전 데이터 불러오기 ---
+    function loadSiegeFromServer(nick) {
+        if(!globalData.siege) return;
+        globalData.siege.filter(s => s.nickname === nick).forEach(s => {
+            if(!siegeData[s.day]) return;
+            const sd = siegeData[s.day];
+            sd.formation = s.formation || "기본";
+            sd.memo = s.memo || "";
+            sd.pet = s.pet || "";
+
+            // 덱 파싱
+            if(s.deck) {
+                sd.deck = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
+                s.deck.split(',').map(p=>p.trim()).forEach((p, i) => {
+                    if(i>=5) return;
+                    const fp = p.indexOf('('), lp = p.lastIndexOf(')');
+                    if(fp > 0 && lp > fp) {
+                        sd.deck[i].name = p.substring(0, fp).trim();
+                        const g = p.substring(fp+1, lp).split('/');
+                        sd.deck[i].w1=g[0]||""; sd.deck[i].a1=g[1]||""; sd.deck[i].w2=g[2]||""; sd.deck[i].a2=g[3]||""; sd.deck[i].acc=g[4]||"";
+                    } else {
+                        sd.deck[i].name = p;
+                    }
+                });
+            }
+
+            // 파이프라인 파싱: "영웅A(S1) → 영웅B(S2)" 형식
+            sd.pipeline = [];
+            if(s.pipeline) {
+                s.pipeline.split('→').map(x=>x.trim()).filter(x=>x).forEach(token => {
+                    const m = token.match(/^(.+)\(S(\d)\)$/);
+                    if(m) sd.pipeline.push({hero: m[1], skill: parseInt(m[2])});
+                });
+            }
+        });
+
+        // 현재 선택된 요일 다시 로드
+        loadDayState(currentSiegeDay);
+        renderSiegeDeck();
+        renderPipeline();
+    }
+
+    // --- 공성전 저장 ---
+    function saveSiege() {
+        saveCurrentDayState();
+        const sd = siegeData[currentSiegeDay];
+        const nick = document.getElementById('myNick').value;
+
+        const deckStr = sd.deck.filter(x=>x.name).map(x => {
+            if(x.w1||x.a1||x.w2||x.a2||x.acc) return `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`;
+            return x.name;
+        }).join(", ");
+
+        const pipeStr = sd.pipeline.map(p => `${p.hero}(S${p.skill})`).join(" \u2192 ");
+
+        if(!deckStr) return alert("영웅을 배치해주세요");
+
+        sendData({
+            action: "save_siege",
+            nickname: nick,
+            day: currentSiegeDay,
+            deck: deckStr,
+            pet: sd.pet,
+            formation: sd.formation,
+            memo: sd.memo,
+            pipeline: pipeStr
+        }, () => {
+            alert(`${DAY_LABELS[currentSiegeDay]}요일 공성전 저장 완료!`);
+        });
+    }
+
+    // --- 공성전 덱 렌더링 ---
+    function renderSiegeDeck() {
+        const container = document.getElementById('siegeDeckContainer');
+        let h = "";
+        siegeDeckState.forEach((o, i) => {
+            const img = o.name ?
+                `<img src="images/${o.name}.png" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
+                : "+";
+
+            h += `<div class="hero-card">
+                    <div class="hero-slot" onclick="openSelector('siege','HERO',${i})">${img}</div>
+                    <div class="equipment-grid">
+                        <div class="gear-slot slot-w1" onclick="openGear('siege',${i},'w1')">${formatGearSlot(o.w1)||"W1"}</div>
+                        <div class="gear-slot slot-a1" onclick="openGear('siege',${i},'a1')">${formatGearSlot(o.a1)||"A1"}</div>
+                        <div class="acc-slot" onclick="openAcc('siege',${i})">${getAbbr(o.acc)||"Acc"}</div>
+                        <div class="gear-slot slot-w2" onclick="openGear('siege',${i},'w2')">${formatGearSlot(o.w2)||"W2"}</div>
+                        <div class="gear-slot slot-a2" onclick="openGear('siege',${i},'a2')">${formatGearSlot(o.a2)||"A2"}</div>
+                    </div>
+                    <div class="skill-btns">
+                        <button class="skill-btn s1" onclick="addSkill(${i},1)" ${o.name?'':'disabled'}>스킬1</button>
+                        <button class="skill-btn s2" onclick="addSkill(${i},2)" ${o.name?'':'disabled'}>스킬2</button>
+                    </div>
+                  </div>`;
+        });
+
+        const pImg = siegePetState ?
+            `<img src="images/${siegePetState}.png" onerror="this.style.display='none'; this.parentNode.innerText='${siegePetState}'">`
+            : "<span style='font-size:10px;color:#888'>PET</span>";
+
+        h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('siege','PET')">${pImg}</div></div>`;
+        container.innerHTML = h;
+    }
+
+    // --- 스킬 파이프라인 ---
+    function addSkill(heroIdx, skillNum) {
+        const name = siegeDeckState[heroIdx].name;
+        if(!name) return;
+        skillPipeline.push({hero: name, skill: skillNum});
+        renderPipeline();
+    }
+
+    function undoPipeline() {
+        skillPipeline.pop();
+        renderPipeline();
+    }
+
+    function clearPipeline() {
+        skillPipeline = [];
+        renderPipeline();
+    }
+
+    function renderPipeline() {
+        const display = document.getElementById('pipelineDisplay');
+        const textEl = document.getElementById('pipelineText');
+
+        if(skillPipeline.length === 0) {
+            display.innerHTML = "<span style='color:#5f6d82;'>스킬 버튼을 클릭하여 순서를 지정하세요</span>";
+            textEl.innerText = "";
+            return;
+        }
+
+        let h = "";
+        skillPipeline.forEach((item, i) => {
+            if(i > 0) h += `<span class="pipeline-arrow">\u2192</span>`;
+            h += `<div class="pipeline-item s${item.skill}">
+                    <div class="pi-icon"><img src="images/${item.hero}.png" onerror="this.style.display='none';"></div>
+                    ${item.hero}(S${item.skill})
+                  </div>`;
+        });
+        display.innerHTML = h;
+
+        textEl.innerText = skillPipeline.map(item => `${item.hero}(S${item.skill})`).join(" \u2192 ");
+    }
 
 </script>
 </body>
