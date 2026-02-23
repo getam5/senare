@@ -268,13 +268,7 @@
             <div class="advent-boss-nav" id="adventBossNav"></div>
 
             <div class="box neon-purple" id="adventBossSection">
-                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                    <h3 id="adventBossTitle" style="margin:0;">보스를 선택하세요</h3>
-                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#6bbd7a; font-size:14px; font-weight:bold;">
-                        <input type="checkbox" id="adventClearedCheck" onchange="toggleAdventCleared()" style="width:auto; margin:0;">
-                        클리어 ✓
-                    </label>
-                </div>
+                <h3 id="adventBossTitle" style="margin:0 0 12px 0;">보스를 선택하세요</h3>
 
                 <div class="team-label team1-label">⚔️ 1팀</div>
                 <div style="display:flex; gap:6px; margin:6px 0;">
@@ -387,7 +381,7 @@
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
 
     // 강림 원정대 변수
-    const ADVENT_BOSSES = ['테오', '카일', '연희', '카르마'];
+    const ADVENT_BOSSES = ['태오', '카일', '연희', '카르마'];
     const ADVENT_FINAL_BOSS = '파괴신';
     let currentAdventBoss = ADVENT_BOSSES[0];
     let adventData = {};
@@ -1062,48 +1056,26 @@
     //  강림 원정대
     // ============================================================
 
-    function isAdventFinalUnlocked() {
-        return ADVENT_BOSSES.every(boss => adventData[boss].cleared);
-    }
-
     function renderAdventBossNav() {
         const nav = document.getElementById('adventBossNav');
         if(!nav) return;
-        const allCleared = isAdventFinalUnlocked();
         let h = "";
 
-        ADVENT_BOSSES.forEach(boss => {
+        [...ADVENT_BOSSES, ADVENT_FINAL_BOSS].forEach(boss => {
             const isActive = currentAdventBoss === boss;
-            const isCleared = adventData[boss].cleared;
-            h += `<button class="advent-boss-btn${isActive?' active':''}${isCleared?' cleared':''}" onclick="switchAdventBoss('${boss}')">
-                    <div class="advent-boss-img"><img src="images/${boss}.png" onerror="this.style.display='none'"></div>
+            const isFinal = boss === ADVENT_FINAL_BOSS;
+            const imgStyle = isFinal ? ' style="background:#5a2030; border-color:#d47474;"' : '';
+            const btnClass = `advent-boss-btn${isActive?' active':''}${isFinal?' final-boss':''}`;
+            h += `<button class="${btnClass}" onclick="switchAdventBoss('${boss}')">
+                    <div class="advent-boss-img"${imgStyle}><img src="images/${boss}.png" onerror="this.style.display='none'; this.parentNode.innerText='${boss[0]}'"></div>
                     <span>${boss}</span>
-                    ${isCleared ? '<span class="clear-badge">✓</span>' : ''}
                   </button>`;
         });
-
-        if(allCleared) {
-            const isFinalActive = currentAdventBoss === ADVENT_FINAL_BOSS;
-            const isFinalCleared = adventData[ADVENT_FINAL_BOSS].cleared;
-            h += `<button class="advent-boss-btn final-boss${isFinalActive?' active':''}${isFinalCleared?' cleared':''}" onclick="switchAdventBoss('${ADVENT_FINAL_BOSS}')">
-                    <div class="advent-boss-img" style="background:#5a2030; border-color:#d47474; font-size:18px;">💀</div>
-                    <span>${ADVENT_FINAL_BOSS}</span>
-                    ${isFinalCleared ? '<span class="clear-badge">✓</span>' : ''}
-                  </button>`;
-        } else {
-            const cnt = ADVENT_BOSSES.filter(b => adventData[b].cleared).length;
-            h += `<button class="advent-boss-btn locked" disabled>
-                    <div class="advent-boss-img" style="background:#2a3040; font-size:18px;">🔒</div>
-                    <span>${ADVENT_FINAL_BOSS}</span>
-                    <span style="font-size:9px; color:#6a7a90;">${cnt}/4 클리어</span>
-                  </button>`;
-        }
 
         nav.innerHTML = h;
     }
 
     function switchAdventBoss(boss) {
-        if(boss === ADVENT_FINAL_BOSS && !isAdventFinalUnlocked()) return;
         saveCurrentAdventBossState();
         currentAdventBoss = boss;
         loadAdventBossState(boss);
@@ -1113,7 +1085,6 @@
     function saveCurrentAdventBossState() {
         if(!currentAdventBoss) return;
         const bd = adventData[currentAdventBoss];
-        bd.cleared = document.getElementById('adventClearedCheck').checked;
         bd.team1.formation = document.getElementById('adventFormation_1').value;
         bd.team1.memo = document.getElementById('adventKeyItems_1').value;
         bd.team2.formation = document.getElementById('adventFormation_2').value;
@@ -1123,7 +1094,6 @@
     function loadAdventBossState(boss) {
         const bd = adventData[boss];
         document.getElementById('adventBossTitle').innerText = `보스: ${boss}`;
-        document.getElementById('adventClearedCheck').checked = bd.cleared;
         document.getElementById('adventFormation_1').value = bd.team1.formation || "기본";
         document.getElementById('adventKeyItems_1').value = bd.team1.memo || "";
         document.getElementById('adventFormation_2').value = bd.team2.formation || "기본";
@@ -1132,11 +1102,6 @@
         renderAdventDeck(2);
         renderAdventPipeline(1);
         renderAdventPipeline(2);
-    }
-
-    function toggleAdventCleared() {
-        adventData[currentAdventBoss].cleared = document.getElementById('adventClearedCheck').checked;
-        renderAdventBossNav();
     }
 
     function renderAdventDeck(teamNum) {
@@ -1237,8 +1202,7 @@
             team1Pipeline: pipeStr(bd.team1),
             team2Deck: deckStr(bd.team2),   team2Pet: bd.team2.pet,
             team2Formation: bd.team2.formation, team2Memo: bd.team2.memo,
-            team2Pipeline: pipeStr(bd.team2),
-            cleared: bd.cleared ? "true" : "false"
+            team2Pipeline: pipeStr(bd.team2)
         }, () => {
             alert(`${currentAdventBoss} 저장 완료!`);
             renderAdventBossNav();
@@ -1277,7 +1241,6 @@
             const boss = s.boss;
             if(!adventData[boss]) return;
             const bd = adventData[boss];
-            bd.cleared = s.cleared === 'true';
             bd.team1 = { deck: parseDeck(s.team1Deck), pet: s.team1Pet||"", formation: s.team1Formation||"기본", memo: s.team1Memo||"", pipeline: parsePipe(s.team1Pipeline) };
             bd.team2 = { deck: parseDeck(s.team2Deck), pet: s.team2Pet||"", formation: s.team2Formation||"기본", memo: s.team2Memo||"", pipeline: parsePipe(s.team2Pipeline) };
         });
