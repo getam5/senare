@@ -7,41 +7,44 @@
     <script src="gamedata.js"></script>
     <style>
         /* --- 기본 스타일 --- */
+        *, *::before, *::after { box-sizing: border-box; }
         body { background-color: #1e2330; color: #d8dce6; font-family: 'Segoe UI', sans-serif; text-align: center; margin: 0; padding-bottom: 100px; }
-        .container { max-width: 600px; margin: 0 auto; padding: 15px; }
+        .container { max-width: 600px; margin: 0 auto; padding: 12px; }
 
-        .box { background: #2a3040; border: 1px solid #3d4a5c; border-radius: 12px; padding: 15px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+        .box { background: #2a3040; border: 1px solid #3d4a5c; border-radius: 12px; padding: 14px; margin-bottom: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
         .neon-blue { border-left: 4px solid #5ba8c8; }
         .neon-green { border-left: 4px solid #6bbd7a; }
         .neon-purple { border-left: 4px solid #a87ccf; }
         .neon-red { border-left: 4px solid #d47474; }
 
-        input, select, textarea { width: 95%; padding: 12px; margin: 5px 0; background: #354050; border: 1px solid #4d5a6e; color: #e0e4ec; border-radius: 6px; font-size: 14px; }
-        button { width: 100%; padding: 12px; margin-top: 5px; background: #3a4758; color: #e0e4ec; border: 1px solid #4d5a6e; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        input, select, textarea { width: 100%; min-width: 0; padding: 10px 12px; margin: 4px 0; background: #354050; border: 1px solid #4d5a6e; color: #e0e4ec; border-radius: 6px; font-size: 14px; }
+        button { width: 100%; padding: 11px; margin-top: 5px; background: #3a4758; color: #e0e4ec; border: 1px solid #4d5a6e; border-radius: 6px; font-weight: bold; cursor: pointer; }
         button:disabled { color: #6a7080; border-color: #3d4a5c; cursor: not-allowed; }
-        .hidden { display: none; }
+        .hidden { display: none !important; }
 
         /* --- 덱 컨테이너 --- */
         .deck-container {
-            display: flex; gap: 6px; justify-content: flex-start; align-items: flex-start;
+            display: flex; flex-wrap: wrap; gap: 6px;
+            justify-content: flex-start; align-items: flex-start;
             background: #323d50; padding: 10px; border-radius: 8px; margin: 10px 0;
-            overflow-x: auto; min-height: 120px;
         }
 
-        .hero-card { display: flex; flex-direction: column; align-items: center; width: 100px; flex-shrink: 0; background: #2a3444; border-radius: 8px; padding: 5px; border: 1px solid #3d4a5c; }
-        .hero-slot { width: 50px; height: 50px; border-radius: 50%; background: #4a5568; border: 2px solid #5f6d82; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; margin-bottom: 5px; }
+        .hero-card { display: flex; flex-direction: column; align-items: center; flex: 1 0 80px; max-width: calc(33.33% - 4px); background: #2a3444; border-radius: 8px; padding: 5px; border: 1px solid #3d4a5c; overflow: hidden; }
+        .hero-slot { width: 48px; height: 48px; border-radius: 50%; background: #4a5568; border: 2px solid #5f6d82; display: flex; align-items: center; justify-content: center; overflow: hidden; cursor: pointer; margin-bottom: 4px; flex-shrink: 0; }
         .hero-slot img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
 
-        .equipment-grid { display: grid; width: 100%; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: 1fr 1fr; gap: 2px; grid-template-areas: "w1 a1 acc" "w2 a2 acc"; }
-        .gear-slot, .acc-slot { background: #3a4758; border: 1px solid #4d5a6e; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #c0c8d8; cursor: pointer; text-align: center; line-height: 1.1; padding: 2px; word-break: keep-all; }
-        .slot-w1 { grid-area: w1; border-color: #7a4a4a; color: #f0c0c0; height: 24px; }
-        .slot-a1 { grid-area: a1; border-color: #4a4a7a; color: #c0c0f0; height: 24px; }
-        .slot-w2 { grid-area: w2; border-color: #7a4a4a; color: #f0c0c0; height: 24px; }
-        .slot-a2 { grid-area: a2; border-color: #4a4a7a; color: #c0c0f0; height: 24px; }
-        .acc-slot { grid-area: acc; border-color: #7a6a3a; color: #f0e8c0; height: 50px; writing-mode: horizontal-tb; }
+        .equipment-grid { display: grid; width: 100%; grid-template-columns: 1fr 1fr 1fr; grid-template-rows: auto auto; gap: 2px; grid-template-areas: "w1 a1 acc" "w2 a2 acc"; }
+        .gear-slot, .acc-slot { background: #3a4758; border: 1px solid #4d5a6e; border-radius: 3px; display: flex; align-items: center; justify-content: center; color: #c0c8d8; cursor: pointer; text-align: center; overflow: hidden; padding: 2px; }
+        .gear-slot { flex-direction: column; font-size: 8.5px; line-height: 1.25; min-height: 28px; }
+        .acc-slot { font-size: 8.5px; line-height: 1.2; }
+        .slot-w1 { grid-area: w1; border-color: #7a4a4a; color: #f0c0c0; }
+        .slot-a1 { grid-area: a1; border-color: #4a4a7a; color: #c0c0f0; }
+        .slot-w2 { grid-area: w2; border-color: #7a4a4a; color: #f0c0c0; }
+        .slot-a2 { grid-area: a2; border-color: #4a4a7a; color: #c0c0f0; }
+        .acc-slot { grid-area: acc; border-color: #7a6a3a; color: #f0e8c0; }
 
-        .pet-wrapper { margin-left: 5px; padding-left: 5px; border-left: 1px solid #4d5a6e; display:flex; align-items:center; }
-        .pet-slot { width: 45px; height: 45px; border-radius: 8px; background: #3a4758; border: 2px dashed #5f6d82; overflow: hidden; display:flex; align-items:center; justify-content:center; cursor: pointer; font-size: 10px; color: #8090a8; text-align: center; }
+        .pet-wrapper { flex: 1 0 80px; max-width: calc(33.33% - 4px); display: flex; align-items: center; justify-content: center; background: #2a3444; border-radius: 8px; padding: 5px; border: 1px dashed #5f6d82; }
+        .pet-slot { width: 62px; height: 62px; border-radius: 8px; background: #3a4758; border: 2px dashed #5f6d82; overflow: hidden; display:flex; align-items:center; justify-content:center; cursor: pointer; font-size: 10px; color: #8090a8; text-align: center; }
         .pet-slot img { width: 100%; height: 100%; object-fit: cover; }
 
         /* 공략 카드 */
@@ -69,21 +72,21 @@
         .acc-btn { border:1px solid #4d5a6e; background:#3a4758; border-radius:4px; text-align:center;}
 
         /* --- 탭 네비게이션 --- */
-        .tab-nav { display: flex; gap: 0; margin-bottom: 20px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5a6e; }
-        .tab-btn { flex: 1; padding: 14px; background: #2a3040; color: #8090a8; border: none; font-size: 15px; font-weight: bold; cursor: pointer; transition: all 0.2s; }
+        .tab-nav { display: flex; gap: 0; margin-bottom: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5a6e; }
+        .tab-btn { flex: 1; padding: 11px 4px; background: #2a3040; color: #8090a8; border: none; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tab-btn.active { background: #3a4758; color: #f0d060; border-bottom: 3px solid #f0d060; }
 
         /* --- 공성전 스킬 버튼 --- */
-        .skill-btns { display: flex; gap: 2px; margin-top: 3px; width: 100%; }
-        .skill-btn { flex: 1; padding: 4px 2px; font-size: 9px; font-weight: bold; border-radius: 3px; border: 1px solid #5f6d82; background: #323d50; color: #a0a8b8; cursor: pointer; text-align: center; width: auto; }
+        .skill-btns { display: flex; gap: 2px; margin-top: 4px; width: 100%; }
+        .skill-btn { flex: 1; padding: 3px 1px; font-size: 9px; font-weight: bold; border-radius: 3px; border: 1px solid #5f6d82; background: #323d50; color: #a0a8b8; cursor: pointer; text-align: center; width: auto; min-width: 0; overflow: hidden; }
         .skill-btn:hover { background: #4a5568; color: #fff; }
         .skill-btn.s1 { border-color: #c89840; color: #f0c860; }
         .skill-btn.s2 { border-color: #4090c0; color: #60b8e8; }
 
         /* --- 스킬 파이프라인 --- */
         .pipeline-area { background: #253040; border: 1px solid #4d5a6e; border-radius: 8px; padding: 12px; margin-top: 10px; }
-        .pipeline-display { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 36px; padding: 8px; background: #1e2830; border-radius: 6px; }
-        .pipeline-item { display: inline-flex; align-items: center; gap: 3px; background: #2e3a50; border: 1px solid #5f6d82; border-radius: 4px; padding: 4px 8px; font-size: 11px; color: #d8dce6; }
+        .pipeline-display { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; min-height: 36px; padding: 8px; background: #1e2830; border-radius: 6px; overflow: hidden; }
+        .pipeline-item { display: inline-flex; align-items: center; gap: 3px; background: #2e3a50; border: 1px solid #5f6d82; border-radius: 4px; padding: 4px 6px; font-size: 11px; color: #d8dce6; max-width: 100%; overflow: hidden; }
         .pipeline-item .pi-icon { width: 20px; height: 20px; border-radius: 50%; overflow: hidden; flex-shrink: 0; }
         .pipeline-item .pi-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
         .pipeline-item.s1 { border-color: #c89840; }
@@ -93,8 +96,8 @@
         .pipeline-controls button { width: auto; flex: 1; padding: 8px; font-size: 12px; }
 
         /* --- 요일 선택 --- */
-        .day-nav { display: flex; gap: 4px; margin-bottom: 12px; }
-        .day-btn { flex: 1; padding: 10px 4px; background: #323d50; color: #8090a8; border: 1px solid #4d5a6e; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; }
+        .day-nav { display: flex; gap: 3px; margin-bottom: 12px; }
+        .day-btn { flex: 1; padding: 9px 2px; background: #323d50; color: #8090a8; border: 1px solid #4d5a6e; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; min-width: 0; overflow: hidden; }
         .day-btn.active { background: #a87ccf; color: #fff; border-color: #a87ccf; }
         .day-btn.sat { }
         .day-btn.sun { }
@@ -107,9 +110,36 @@
         .sahwang-btn .sh-icon { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid #5f6d82; }
         .sahwang-btn .sh-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
         .sahwang-btn.active { background: #4a3060; border-color: #a87ccf; color: #e0d0f0; }
+
+        /* --- 강림 원정대 --- */
+        .advent-boss-nav { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
+        .advent-boss-btn { flex: 1; min-width: 58px; padding: 8px 4px; background: #323d50; color: #8090a8; border: 2px solid #4d5a6e; border-radius: 8px; font-size: 12px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; width: auto; }
+        .advent-boss-img { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid #5f6d82; background: #4a5568; display: flex; align-items: center; justify-content: center; }
+        .advent-boss-img img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
+        .advent-boss-btn.active { background: #4a3060; border-color: #a87ccf; color: #e0d0f0; }
+        .advent-boss-btn.active .advent-boss-img { border-color: #a87ccf; }
+        .advent-boss-btn.cleared .advent-boss-img { border-color: #6bbd7a; }
+        .advent-boss-btn.final-boss.active { background: #602030; border-color: #d47474; color: #f0d0d0; }
+        .advent-boss-btn.locked { cursor: not-allowed; opacity: 0.5; }
+        .clear-badge { position: absolute; top: 3px; right: 3px; background: #6bbd7a; color: #1e2330; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; line-height: 1; }
+        .team-divider { border-color: #4d5a6e; margin: 14px 0; }
+        .team-label { margin: 0 0 8px 0; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: inline-block; }
+        .team1-label { background: #1e3050; color: #80b8e0; border-left: 3px solid #4090c0; }
+        .team2-label { background: #40203a; color: #e080c0; border-left: 3px solid #c04090; }
+
+        /* --- 로딩 화면 --- */
+        #loadingArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1e2330; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
+        .spinner { width: 48px; height: 48px; border: 4px solid #3d4a5c; border-top-color: #f0d060; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+<div id="loadingArea" class="hidden">
+    <div class="spinner"></div>
+    <p id="loadingMsg" style="color:#8090a8; font-size: 15px;">서버 연결 중...</p>
+    <button id="loadingCancelBtn" onclick="cancelAutoLogin()" class="hidden" style="margin-top:10px; width:auto; padding:10px 24px; background:#3a4758; border:1px solid #4d5a6e; border-radius:6px; color:#d8dce6;">다시 시도</button>
+</div>
 
 <div class="container">
     <h2 style="color:#f0d060; text-shadow:0 0 8px rgba(240,208,96,0.3);">⚔️ 작전상황실</h2>
@@ -127,6 +157,7 @@
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('guild')">길드전</button>
             <button class="tab-btn" onclick="switchTab('siege')">공성전</button>
+            <button class="tab-btn" onclick="switchTab('advent')">강림원정</button>
         </div>
 
         <div id="guildWarTab">
@@ -136,7 +167,7 @@
                 <option value="">-- 상대를 선택하세요 --</option>
             </select>
 
-            <div id="enemyDeckVisual" class="deck-container" style="justify-content: center; min-height: 60px;">
+            <div id="enemyDeckVisual" class="deck-container" style="justify-content: center; min-height: 56px;">
                 <span style="color:#5f6d82; line-height:60px;">상대 정보 대기 중</span>
             </div>
             <input type="hidden" id="currentEnemyDeck">
@@ -233,6 +264,66 @@
         </div>
         </div><!-- /siegeWarTab -->
 
+        <div id="adventTab" class="hidden">
+            <div class="advent-boss-nav" id="adventBossNav"></div>
+
+            <div class="box neon-purple" id="adventBossSection">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                    <h3 id="adventBossTitle" style="margin:0;">보스를 선택하세요</h3>
+                    <label style="display:flex; align-items:center; gap:6px; cursor:pointer; color:#6bbd7a; font-size:14px; font-weight:bold;">
+                        <input type="checkbox" id="adventClearedCheck" onchange="toggleAdventCleared()" style="width:auto; margin:0;">
+                        클리어 ✓
+                    </label>
+                </div>
+
+                <div class="team-label team1-label">⚔️ 1팀</div>
+                <div style="display:flex; gap:6px; margin:6px 0;">
+                    <select id="adventFormation_1" style="flex:1;">
+                        <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                    </select>
+                    <input type="text" id="adventKeyItems_1" placeholder="메모" style="flex:2;">
+                </div>
+                <div class="deck-container" id="adventDeckContainer_1"></div>
+                <div class="pipeline-area">
+                    <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
+                    <div class="pipeline-display" id="adventPipelineDisplay_1"><span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span></div>
+                    <div class="pipeline-controls">
+                        <button onclick="undoAdventPipeline(1)" style="background:#4a5568;">되돌리기</button>
+                        <button onclick="clearAdventPipeline(1)" style="background:#8a4040;">초기화</button>
+                    </div>
+                    <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
+                        <span style="font-size:11px; color:#8090a8;">결과: </span>
+                        <span id="adventPipelineText_1" style="font-size:11px; color:#6bbd7a;"></span>
+                    </div>
+                </div>
+
+                <hr class="team-divider">
+
+                <div class="team-label team2-label">⚔️ 2팀</div>
+                <div style="display:flex; gap:6px; margin:6px 0;">
+                    <select id="adventFormation_2" style="flex:1;">
+                        <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                    </select>
+                    <input type="text" id="adventKeyItems_2" placeholder="메모" style="flex:2;">
+                </div>
+                <div class="deck-container" id="adventDeckContainer_2"></div>
+                <div class="pipeline-area">
+                    <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
+                    <div class="pipeline-display" id="adventPipelineDisplay_2"><span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span></div>
+                    <div class="pipeline-controls">
+                        <button onclick="undoAdventPipeline(2)" style="background:#4a5568;">되돌리기</button>
+                        <button onclick="clearAdventPipeline(2)" style="background:#8a4040;">초기화</button>
+                    </div>
+                    <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
+                        <span style="font-size:11px; color:#8090a8;">결과: </span>
+                        <span id="adventPipelineText_2" style="font-size:11px; color:#6bbd7a;"></span>
+                    </div>
+                </div>
+
+                <button onclick="saveAdvent()" style="background:#3a7a50; margin-top:10px;">💾 저장</button>
+            </div>
+        </div><!-- /adventTab -->
+
     </div>
 </div>
 
@@ -295,6 +386,19 @@
     let globalData = { members: [], enemies: [], strategies: [] };
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
 
+    // 강림 원정대 변수
+    const ADVENT_BOSSES = ['테오', '카일', '연희', '카르마'];
+    const ADVENT_FINAL_BOSS = '파괴신';
+    let currentAdventBoss = ADVENT_BOSSES[0];
+    let adventData = {};
+    [...ADVENT_BOSSES, ADVENT_FINAL_BOSS].forEach(boss => {
+        adventData[boss] = {
+            team1: { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" },
+            team2: { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" },
+            cleared: false
+        };
+    });
+
     // 공성전 변수
     const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
     const DAY_LABELS = {mon:'월',tue:'화',wed:'수',thu:'목',fri:'금',sat:'토',sun:'일'};
@@ -322,6 +426,9 @@
         const jsDay = new Date().getDay();
         const dayMap = [6,0,1,2,3,4,5]; // JS요일→DAYS인덱스
         switchSiegeDay(DAYS[dayMap[jsDay]]);
+
+        renderAdventBossNav();
+        loadAdventBossState(currentAdventBoss);
     };
 
     // 🕒 세션 확인 로직
@@ -336,7 +443,9 @@
                 // 시간 만료됨
                 logout("세션이 만료되었습니다. 다시 로그인해주세요.");
             } else {
-                // 유효함 -> 자동 로그인 진행
+                // 유효함 -> 로딩 화면 표시 후 자동 로그인 진행
+                document.getElementById('loadingArea').classList.remove('hidden');
+                document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('myNick').value = savedNick;
                 tryLogin(true);
             }
@@ -361,6 +470,16 @@
     }
 
     // --- 로그인 ---
+    let _loginAbortController = null;
+    let _loginTimeoutId = null;
+
+    function cancelAutoLogin() {
+        if(_loginAbortController) _loginAbortController.abort();
+        clearTimeout(_loginTimeoutId);
+        document.getElementById('loadingArea').classList.add('hidden');
+        document.getElementById('loginArea').classList.remove('hidden');
+    }
+
     function tryLogin(isAuto=false) {
         const nick = document.getElementById('myNick').value, key = document.getElementById('myKey').value;
         const msg = document.getElementById('loginMsg');
@@ -370,7 +489,20 @@
         msg.style.display='block';
         if(!isAuto) msg.innerText = "서버 연결 중...";
 
-        fetch(GAS_URL).then(r=>r.json()).then(d => {
+        // 자동 로그인: 10초 타임아웃 후 취소 버튼 노출
+        if(isAuto) {
+            _loginAbortController = new AbortController();
+            _loginTimeoutId = setTimeout(() => {
+                _loginAbortController.abort();
+                document.getElementById('loadingMsg').innerText = "연결이 지연되고 있습니다.";
+                document.getElementById('loadingCancelBtn').classList.remove('hidden');
+            }, 10000);
+        }
+
+        const fetchOpts = isAuto ? { signal: _loginAbortController.signal } : {};
+
+        fetch(GAS_URL, fetchOpts).then(r=>r.json()).then(d => {
+            clearTimeout(_loginTimeoutId);
             globalData = d;
 
             let valid = true;
@@ -378,6 +510,10 @@
             if(d.members && d.members.length > 0 && !isAuto) {
                 valid = d.members.find(m => String(m.nick)===nick && String(m.key)===key);
             }
+
+            document.getElementById('loadingArea').classList.add('hidden');
+            document.getElementById('loadingCancelBtn').classList.add('hidden');
+            document.getElementById('loadingMsg').innerText = "서버 연결 중...";
 
             if(valid) {
                 // 로그인 성공 시 세션 저장 (현재시간 + 타임아웃)
@@ -388,10 +524,20 @@
                 document.getElementById('mainArea').classList.remove('hidden');
                 renderDropdowns();
                 loadSiegeFromServer(nick);
+                loadAdventFromServer(nick);
             } else {
+                document.getElementById('loginArea').classList.remove('hidden');
                 msg.innerText = "불일치"; msg.style.color = "#d47474";
             }
-        }).catch(e=>{ msg.innerText="통신오류"; });
+        }).catch(e=>{
+            clearTimeout(_loginTimeoutId);
+            document.getElementById('loadingArea').classList.add('hidden');
+            document.getElementById('loadingCancelBtn').classList.add('hidden');
+            document.getElementById('loadingMsg').innerText = "서버 연결 중...";
+            document.getElementById('loginArea').classList.remove('hidden');
+            msg.innerText = e.name === 'AbortError' ? "연결 시간 초과. 다시 시도해주세요." : "통신오류";
+            msg.style.color = "#d47474";
+        });
     }
 
     function renderDropdowns() {
@@ -422,7 +568,7 @@
         if(firstParen > 0 && lastParen > firstParen) {
             const set = fullText.substring(0, firstParen);
             const opt = fullText.substring(firstParen + 1, lastParen);
-            return `${getAbbr(set)}(${getAbbr(opt)})`;
+            return `${getAbbr(set)}<br>${getAbbr(opt)}`;
         }
         return getAbbr(fullText);
     }
@@ -491,10 +637,14 @@
     function getDeckState(mode) {
         if(mode==='myBattle') return myDeckState;
         if(mode==='siege') return siegeDeckState;
+        if(mode==='advent1') return adventData[currentAdventBoss].team1.deck;
+        if(mode==='advent2') return adventData[currentAdventBoss].team2.deck;
         return adminDeckState;
     }
     function renderDeckByMode(mode) {
         if(mode==='siege') renderSiegeDeck();
+        else if(mode==='advent1') renderAdventDeck(1);
+        else if(mode==='advent2') renderAdventDeck(2);
         else renderInteractiveDeck(mode);
     }
 
@@ -505,6 +655,8 @@
             else {
                 if(currentMode==='myBattle') myPetState=val;
                 else if(currentMode==='siege') siegePetState=val;
+                else if(currentMode==='advent1') adventData[currentAdventBoss].team1.pet=val;
+                else if(currentMode==='advent2') adventData[currentAdventBoss].team2.pet=val;
                 else adminPetState=val;
             }
             renderDeckByMode(currentMode);
@@ -721,8 +873,10 @@
         const btns = document.querySelectorAll('.tab-btn');
         btns[0].classList.toggle('active', tab==='guild');
         btns[1].classList.toggle('active', tab==='siege');
+        btns[2].classList.toggle('active', tab==='advent');
         document.getElementById('guildWarTab').classList.toggle('hidden', tab!=='guild');
         document.getElementById('siegeWarTab').classList.toggle('hidden', tab!=='siege');
+        document.getElementById('adventTab').classList.toggle('hidden', tab!=='advent');
     }
 
     // --- 요일 전환 ---
@@ -901,6 +1055,235 @@
         display.innerHTML = h;
 
         textEl.innerText = skillPipeline.map(item => `${item.hero}(S${item.skill})`).join(" \u2192 ");
+    }
+
+
+    // ============================================================
+    //  강림 원정대
+    // ============================================================
+
+    function isAdventFinalUnlocked() {
+        return ADVENT_BOSSES.every(boss => adventData[boss].cleared);
+    }
+
+    function renderAdventBossNav() {
+        const nav = document.getElementById('adventBossNav');
+        if(!nav) return;
+        const allCleared = isAdventFinalUnlocked();
+        let h = "";
+
+        ADVENT_BOSSES.forEach(boss => {
+            const isActive = currentAdventBoss === boss;
+            const isCleared = adventData[boss].cleared;
+            h += `<button class="advent-boss-btn${isActive?' active':''}${isCleared?' cleared':''}" onclick="switchAdventBoss('${boss}')">
+                    <div class="advent-boss-img"><img src="images/${boss}.png" onerror="this.style.display='none'"></div>
+                    <span>${boss}</span>
+                    ${isCleared ? '<span class="clear-badge">✓</span>' : ''}
+                  </button>`;
+        });
+
+        if(allCleared) {
+            const isFinalActive = currentAdventBoss === ADVENT_FINAL_BOSS;
+            const isFinalCleared = adventData[ADVENT_FINAL_BOSS].cleared;
+            h += `<button class="advent-boss-btn final-boss${isFinalActive?' active':''}${isFinalCleared?' cleared':''}" onclick="switchAdventBoss('${ADVENT_FINAL_BOSS}')">
+                    <div class="advent-boss-img" style="background:#5a2030; border-color:#d47474; font-size:18px;">💀</div>
+                    <span>${ADVENT_FINAL_BOSS}</span>
+                    ${isFinalCleared ? '<span class="clear-badge">✓</span>' : ''}
+                  </button>`;
+        } else {
+            const cnt = ADVENT_BOSSES.filter(b => adventData[b].cleared).length;
+            h += `<button class="advent-boss-btn locked" disabled>
+                    <div class="advent-boss-img" style="background:#2a3040; font-size:18px;">🔒</div>
+                    <span>${ADVENT_FINAL_BOSS}</span>
+                    <span style="font-size:9px; color:#6a7a90;">${cnt}/4 클리어</span>
+                  </button>`;
+        }
+
+        nav.innerHTML = h;
+    }
+
+    function switchAdventBoss(boss) {
+        if(boss === ADVENT_FINAL_BOSS && !isAdventFinalUnlocked()) return;
+        saveCurrentAdventBossState();
+        currentAdventBoss = boss;
+        loadAdventBossState(boss);
+        renderAdventBossNav();
+    }
+
+    function saveCurrentAdventBossState() {
+        if(!currentAdventBoss) return;
+        const bd = adventData[currentAdventBoss];
+        bd.cleared = document.getElementById('adventClearedCheck').checked;
+        bd.team1.formation = document.getElementById('adventFormation_1').value;
+        bd.team1.memo = document.getElementById('adventKeyItems_1').value;
+        bd.team2.formation = document.getElementById('adventFormation_2').value;
+        bd.team2.memo = document.getElementById('adventKeyItems_2').value;
+    }
+
+    function loadAdventBossState(boss) {
+        const bd = adventData[boss];
+        document.getElementById('adventBossTitle').innerText = `보스: ${boss}`;
+        document.getElementById('adventClearedCheck').checked = bd.cleared;
+        document.getElementById('adventFormation_1').value = bd.team1.formation || "기본";
+        document.getElementById('adventKeyItems_1').value = bd.team1.memo || "";
+        document.getElementById('adventFormation_2').value = bd.team2.formation || "기본";
+        document.getElementById('adventKeyItems_2').value = bd.team2.memo || "";
+        renderAdventDeck(1);
+        renderAdventDeck(2);
+        renderAdventPipeline(1);
+        renderAdventPipeline(2);
+    }
+
+    function toggleAdventCleared() {
+        adventData[currentAdventBoss].cleared = document.getElementById('adventClearedCheck').checked;
+        renderAdventBossNav();
+    }
+
+    function renderAdventDeck(teamNum) {
+        const container = document.getElementById(`adventDeckContainer_${teamNum}`);
+        if(!container) return;
+        const mode = `advent${teamNum}`;
+        const teamKey = `team${teamNum}`;
+        const state = adventData[currentAdventBoss][teamKey].deck;
+        const petState = adventData[currentAdventBoss][teamKey].pet;
+
+        let h = "";
+        state.forEach((o, i) => {
+            const img = o.name ?
+                `<img src="images/${o.name}.png" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">` : "+";
+            h += `<div class="hero-card">
+                    <div class="hero-slot" onclick="openSelector('${mode}','HERO',${i})">${img}</div>
+                    <div class="equipment-grid">
+                        <div class="gear-slot slot-w1" onclick="openGear('${mode}',${i},'w1')">${formatGearSlot(o.w1)||"W1"}</div>
+                        <div class="gear-slot slot-a1" onclick="openGear('${mode}',${i},'a1')">${formatGearSlot(o.a1)||"A1"}</div>
+                        <div class="acc-slot" onclick="openAcc('${mode}',${i})">${getAbbr(o.acc)||"Acc"}</div>
+                        <div class="gear-slot slot-w2" onclick="openGear('${mode}',${i},'w2')">${formatGearSlot(o.w2)||"W2"}</div>
+                        <div class="gear-slot slot-a2" onclick="openGear('${mode}',${i},'a2')">${formatGearSlot(o.a2)||"A2"}</div>
+                    </div>
+                    <div class="skill-btns">
+                        <button class="skill-btn s1" onclick="addAdventSkill(${teamNum},${i},1)" ${o.name?'':'disabled'}>스킬1</button>
+                        <button class="skill-btn s2" onclick="addAdventSkill(${teamNum},${i},2)" ${o.name?'':'disabled'}>스킬2</button>
+                    </div>
+                  </div>`;
+        });
+
+        const pImg = petState ?
+            `<img src="images/${petState}.png" onerror="this.style.display='none'; this.parentNode.innerText='${petState}'">` :
+            "<span style='font-size:10px;color:#888'>PET</span>";
+        h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('${mode}','PET')">${pImg}</div></div>`;
+        container.innerHTML = h;
+    }
+
+    function renderAdventPipeline(teamNum) {
+        const pipeline = adventData[currentAdventBoss][`team${teamNum}`].pipeline;
+        const display = document.getElementById(`adventPipelineDisplay_${teamNum}`);
+        const textEl = document.getElementById(`adventPipelineText_${teamNum}`);
+        if(!display) return;
+
+        if(pipeline.length === 0) {
+            display.innerHTML = "<span style='color:#5f6d82;'>스킬 버튼을 클릭하여 순서를 지정하세요</span>";
+            textEl.innerText = "";
+            return;
+        }
+
+        let h = "";
+        pipeline.forEach((item, i) => {
+            if(i > 0) h += `<span class="pipeline-arrow">\u2192</span>`;
+            h += `<div class="pipeline-item s${item.skill}">
+                    <div class="pi-icon"><img src="images/${item.hero}.png" onerror="this.style.display='none';"></div>
+                    ${item.hero}(S${item.skill})
+                  </div>`;
+        });
+        display.innerHTML = h;
+        textEl.innerText = pipeline.map(p => `${p.hero}(S${p.skill})`).join(" \u2192 ");
+    }
+
+    function addAdventSkill(teamNum, heroIdx, skillNum) {
+        const name = adventData[currentAdventBoss][`team${teamNum}`].deck[heroIdx].name;
+        if(!name) return;
+        adventData[currentAdventBoss][`team${teamNum}`].pipeline.push({hero: name, skill: skillNum});
+        renderAdventPipeline(teamNum);
+    }
+
+    function undoAdventPipeline(teamNum) {
+        adventData[currentAdventBoss][`team${teamNum}`].pipeline.pop();
+        renderAdventPipeline(teamNum);
+    }
+
+    function clearAdventPipeline(teamNum) {
+        adventData[currentAdventBoss][`team${teamNum}`].pipeline = [];
+        renderAdventPipeline(teamNum);
+    }
+
+    function saveAdvent() {
+        saveCurrentAdventBossState();
+        const bd = adventData[currentAdventBoss];
+        const nick = document.getElementById('myNick').value;
+
+        const deckStr = (team) => team.deck.filter(x=>x.name).map(x => {
+            if(x.w1||x.a1||x.w2||x.a2||x.acc) return `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`;
+            return x.name;
+        }).join(", ");
+        const pipeStr = (team) => team.pipeline.map(p => `${p.hero}(S${p.skill})`).join(" \u2192 ");
+
+        if(!deckStr(bd.team1) && !deckStr(bd.team2)) return alert("최소 1팀 이상 영웅을 배치해주세요");
+
+        sendData({
+            action: "save_advent",
+            nickname: nick,
+            boss: currentAdventBoss,
+            team1Deck: deckStr(bd.team1),   team1Pet: bd.team1.pet,
+            team1Formation: bd.team1.formation, team1Memo: bd.team1.memo,
+            team1Pipeline: pipeStr(bd.team1),
+            team2Deck: deckStr(bd.team2),   team2Pet: bd.team2.pet,
+            team2Formation: bd.team2.formation, team2Memo: bd.team2.memo,
+            team2Pipeline: pipeStr(bd.team2),
+            cleared: bd.cleared ? "true" : "false"
+        }, () => {
+            alert(`${currentAdventBoss} 저장 완료!`);
+            renderAdventBossNav();
+        });
+    }
+
+    function loadAdventFromServer(nick) {
+        if(!globalData.advent) return;
+
+        const parseDeck = (deckStr) => {
+            const deck = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
+            if(!deckStr) return deck;
+            deckStr.split(',').map(p=>p.trim()).forEach((p, i) => {
+                if(i>=5) return;
+                const fp=p.indexOf('('), lp=p.lastIndexOf(')');
+                if(fp>0 && lp>fp) {
+                    deck[i].name = p.substring(0,fp).trim();
+                    const g = p.substring(fp+1,lp).split('/');
+                    deck[i].w1=g[0]||""; deck[i].a1=g[1]||""; deck[i].w2=g[2]||""; deck[i].a2=g[3]||""; deck[i].acc=g[4]||"";
+                } else { deck[i].name = p; }
+            });
+            return deck;
+        };
+
+        const parsePipe = (pipeStr) => {
+            const pipe = [];
+            if(!pipeStr) return pipe;
+            pipeStr.split('\u2192').map(x=>x.trim()).filter(x=>x).forEach(token => {
+                const m = token.match(/^(.+)\(S(\d)\)$/);
+                if(m) pipe.push({hero: m[1], skill: parseInt(m[2])});
+            });
+            return pipe;
+        };
+
+        globalData.advent.filter(s => s.nickname === nick).forEach(s => {
+            const boss = s.boss;
+            if(!adventData[boss]) return;
+            const bd = adventData[boss];
+            bd.cleared = s.cleared === 'true';
+            bd.team1 = { deck: parseDeck(s.team1Deck), pet: s.team1Pet||"", formation: s.team1Formation||"기본", memo: s.team1Memo||"", pipeline: parsePipe(s.team1Pipeline) };
+            bd.team2 = { deck: parseDeck(s.team2Deck), pet: s.team2Pet||"", formation: s.team2Formation||"기본", memo: s.team2Memo||"", pipeline: parsePipe(s.team2Pipeline) };
+        });
+
+        loadAdventBossState(currentAdventBoss);
+        renderAdventBossNav();
     }
 
 </script>
