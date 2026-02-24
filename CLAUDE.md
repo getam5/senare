@@ -10,8 +10,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Single-page app** with no build system, bundler, or framework. Everything runs as vanilla HTML/CSS/JS.
 - **`index.html`**: Contains all UI markup, styles (inline `<style>`), and application logic (inline `<script>`). This is the entire app.
-- **`gamedata.js`**: Defines the `HEROES` array (character roster). Loaded before `index.html`'s script via `<script src>`. Also exports empty `PETS` and `ACC` arrays (pet/accessory lists are hardcoded in `index.html` instead).
-- **`images/`**: Hero/pet portrait PNGs. Filenames are Korean character names (e.g., `루디.png`). Referenced dynamically via template strings like `` `images/${name}.png` ``.
+- **`gamedata.js`**: Defines `HEROES` (87개), `PETS` (39개), `ACC` (70개 장신구 전 등급) 배열. `index.html`의 `DATA_PETS`/`GEAR_ACCESSORIES`가 이 배열을 직접 참조함.
+- **`images/heros/`**: Hero portrait PNGs. Filenames match the `HEROES` array in `gamedata.js` (e.g., `루디.png`).
+- **`images/pets/`**: Pet portrait PNGs. Filenames match the `PETS` array in `gamedata.js`.
+- **`images/accesories/`**: Accessory (ring) PNGs. Filenames match the `ACC` array in `gamedata.js`. (Note: folder name is intentionally `accesories`, one 's'.)
+- Image paths are resolved via helper functions `heroImg(n)`, `petImg(n)`, `accImg(n)` defined at the top of the `<script>` block.
 - **`supabase_schema.sql`**: SQL for creating all required Supabase tables. Run once in Supabase SQL Editor to initialize the database.
 - **Backend**: Supabase (`https://zobzzgvbqmkistvdlexi.supabase.co`). Uses the Supabase REST API (`/rest/v1/`) directly from the browser with the anon public key. No server-side code.
 
@@ -19,7 +22,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 | 테이블 | 설명 | UPSERT 키 |
 |---|---|---|
-| `members` | 닉네임 + 키(비밀번호) | — |
+| `members` | 닉네임, 키, role(`admin`/`user`), status(`active`/`pending`/`rejected`), must_change_pw | — |
 | `enemies` | 적군 이름 + 수비덱 | — |
 | `strategies` | 공략 (대상, 공격덱, 펫, 진형, 메모 등) | — |
 | `battle_records` | 전투 결과 기록 | — |

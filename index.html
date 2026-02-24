@@ -68,8 +68,10 @@
         .gear-col { flex: 1; overflow-y: auto; background: #2a3444; border: 1px solid #4d5a6e; border-radius: 4px; display:flex; flex-direction:column;}
         .gear-btn, .acc-btn { padding: 12px; background: transparent; color: #a0a8b8; border: none; border-bottom: 1px solid #3d4a5c; text-align: left; cursor: pointer; }
         .gear-btn.selected { background: #2a6058; color: #fff; font-weight: bold; }
-        .acc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; overflow-y: auto; max-height: 300px; margin-top:10px;}
-        .acc-btn { border:1px solid #4d5a6e; background:#3a4758; border-radius:4px; text-align:center;}
+        .acc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; overflow-y: auto; max-height: 380px; margin-top:10px;}
+        .acc-btn { border:1px solid #4d5a6e; background:#3a4758; border-radius:6px; text-align:center; padding:6px 2px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
+        .acc-btn img { width:36px; height:36px; object-fit:contain; }
+        .acc-btn span { font-size:9px; color:#c0c8d8; line-height:1.2; word-break:keep-all; }
 
         /* --- 탭 네비게이션 --- */
         .tab-nav { display: flex; gap: 0; margin-bottom: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5a6e; }
@@ -131,6 +133,25 @@
         #loadingArea { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1e2330; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 9999; }
         .spinner { width: 48px; height: 48px; border: 4px solid #3d4a5c; border-top-color: #f0d060; border-radius: 50%; animation: spin 0.8s linear infinite; margin-bottom: 16px; }
         @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* --- 권한 뱃지 --- */
+        .badge-admin { display:inline-block; font-size:10px; padding:2px 7px; border-radius:3px; background:#4a3060; color:#a87ccf; font-weight:bold; }
+        .badge-user  { display:inline-block; font-size:10px; padding:2px 7px; border-radius:3px; background:#1e3050; color:#5ba8c8; font-weight:bold; }
+
+        /* --- 사용자 정보 바 --- */
+        #userInfoBar { display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:8px 12px; background:#2a3040; border-radius:8px; border:1px solid #3d4a5c; }
+        #userInfoBar .ui-name { color:#f0d060; font-weight:bold; font-size:14px; }
+        #userInfoBar .ui-btns { display:flex; gap:6px; }
+        #userInfoBar .ui-btns button { width:auto; padding:5px 10px; font-size:12px; margin:0; }
+
+        /* --- 멤버 관리 카드 --- */
+        .member-card { display:flex; align-items:center; justify-content:space-between; padding:10px 12px; background:#323d50; border-radius:8px; margin-bottom:6px; gap:8px; }
+        .member-card .mc-name { color:#d8dce6; font-size:13px; }
+        .member-card .mc-btns { display:flex; gap:5px; flex-shrink:0; }
+        .member-card .mc-btns button { width:auto; padding:5px 10px; font-size:11px; margin:0; }
+
+        /* --- 가입신청 영역 --- */
+        #signupArea { margin-top:12px; padding-top:12px; border-top:1px solid #3d4a5c; }
     </style>
 </head>
 <body>
@@ -150,14 +171,37 @@
         <input type="password" id="myKey" placeholder="키 (비밀번호)">
         <p id="loginMsg" style="color:#8090a8; display:none;">접속 중...</p>
         <button onclick="tryLogin()">접속하기</button>
+        <button onclick="toggleSignup()" style="background:#2a3a4a; border-color:#5ba8c8; color:#5ba8c8; margin-top:6px;">📝 가입 신청</button>
+
+        <div id="signupArea" class="hidden">
+            <h4 style="color:#6bbd7a; margin:0 0 8px 0; text-align:left;">신규 가입 신청</h4>
+            <input type="text" id="signupNick" placeholder="사용할 닉네임">
+            <input type="password" id="signupKey" placeholder="비밀번호 (4자 이상)">
+            <input type="password" id="signupKeyConfirm" placeholder="비밀번호 확인">
+            <p id="signupMsg" style="display:none; font-size:13px; margin:4px 0;"></p>
+            <button onclick="submitSignup(event)" style="background:#2a6050; border-color:#6bbd7a; color:#6bbd7a;">신청하기</button>
+            <button onclick="toggleSignup()" style="background:#8a4040;">취소</button>
+        </div>
     </div>
 
     <div id="mainArea" class="hidden">
+
+        <div id="userInfoBar">
+            <div>
+                <span id="userNickDisplay" class="ui-name"></span>
+                <span id="userRoleDisplay" style="margin-left:6px;"></span>
+            </div>
+            <div class="ui-btns">
+                <button onclick="openPwChangeModal(false)" style="background:#3a4758;">🔑 비번변경</button>
+                <button onclick="logout()" style="background:#8a4040;">로그아웃</button>
+            </div>
+        </div>
 
         <div class="tab-nav">
             <button class="tab-btn active" onclick="switchTab('guild')">길드전</button>
             <button class="tab-btn" onclick="switchTab('siege')">공성전</button>
             <button class="tab-btn" onclick="switchTab('advent')">강림원정</button>
+            <button class="tab-btn hidden" id="adminTabBtn" onclick="switchTab('admin')">⚙️ 관리</button>
         </div>
 
         <div id="guildWarTab">
@@ -196,7 +240,7 @@
             </div>
         </div>
 
-        <button onclick="toggleAdmin()" style="background:#3a4758; margin-top:20px;">🛠️ 관리자 모드</button>
+        <button id="toggleAdminBtn" onclick="toggleAdmin()" class="hidden" style="background:#3a4758; margin-top:20px;">🛠️ 공략/적군 관리</button>
 
         <div id="adminArea" class="hidden" style="margin-top:20px;">
             <div class="box neon-blue">
@@ -318,6 +362,17 @@
             </div>
         </div><!-- /adventTab -->
 
+        <div id="adminMgmtTab" class="hidden">
+            <div class="box neon-blue">
+                <h3>📋 가입 신청 목록</h3>
+                <div id="pendingMembersList"><p style="color:#5f6d82;">로딩 중...</p></div>
+            </div>
+            <div class="box neon-green">
+                <h3>👥 멤버 관리</h3>
+                <div id="allMembersList"><p style="color:#5f6d82;">로딩 중...</p></div>
+            </div>
+        </div><!-- /adminMgmtTab -->
+
     </div>
 </div>
 
@@ -345,6 +400,18 @@
     </div>
 </div>
 
+<div id="pwChangeModal" class="modal" style="z-index:1100;">
+    <div class="modal-content" style="max-width:360px;">
+        <h3 style="margin-top:0; color:#f0d060;">🔑 비밀번호 변경</h3>
+        <p id="pwChangeReason" style="color:#d47474; font-size:13px; margin:0 0 10px 0;"></p>
+        <input type="password" id="pwNew" placeholder="새 비밀번호 (4자 이상)">
+        <input type="password" id="pwNewConfirm" placeholder="새 비밀번호 확인">
+        <p id="pwChangeMsg" style="display:none; color:#d47474; font-size:13px; margin:4px 0;"></p>
+        <button onclick="changePassword(event)" style="background:#3a7a50; margin-top:10px;">변경하기</button>
+        <button id="pwSkipBtn" onclick="closePwChangeModal()" style="background:#4a5568;">나중에</button>
+    </div>
+</div>
+
 <div id="accModal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0;">장신구 선택</h3>
@@ -366,12 +433,30 @@
 
     // 데이터 정의
     const DATA_HEROES = (typeof HEROES !== 'undefined') ? HEROES : ["루디", "에반", "제이브"];
-    const DATA_PETS = ["루", "이린", "리첼", "크리", "파이크", "델로", "윈디", "유", "연지", "카람", "멜패로", "아이반", "카렌", "리쿠", "쥬시", "헬레핀", "헤리핀", "제니퍼", "유우", "크로아", "파라곤", "노트", "베이", "니키", "세리", "R-rl", "푸리", "아야", "라구리", "해르피", "사란", "니나", "풍소협", "뮤뮤", "믹", "더지", "에리", "미믹", "두"];
+    const DATA_PETS = (typeof PETS !== 'undefined') ? PETS : ["루", "이린", "리첼", "크리", "파이크", "델로", "윈디", "유", "연지", "카람", "멜패로", "아이반", "카렌", "리쿠", "쥬시", "헬레핀", "헤리핀", "제니퍼", "유우", "크로아", "파라곤", "노트", "베이", "니키", "세리", "R-rl", "푸리", "아야", "라구리", "해르피", "사란", "니나", "풍소협", "뮤뮤", "믹", "더지", "에리", "미믹", "두"];
 
     const GEAR_SETS = ["선봉장", "추적자", "성기사", "수문장", "수호자", "암살자", "복수자", "주술사", "조율자"];
     const OPTS_WEAPON = ["약점 공격 확률", "치명타 확률", "치명타 피해", "모든 공격력(%)", "모든 공격력", "방어력(%)", "방어력", "생명력(%)", "생명력", "효과적중"];
     const OPTS_ARMOR = ["받는피해감소", "막기확률", "모든 공격력(%)", "모든 공격력", "방어력(%)", "방어력", "생명력(%)", "생명력", "효과저항"];
-    const GEAR_ACCESSORIES = ["부활의 반지", "불사의 반지", "권능의 반지", "기합의 반지", "철벽의 반지", "건강의 반지", "토벌의 반지", "공성의 반지", "섬멸의 반지", "근성의 반지"];
+    const GEAR_ACCESSORIES = (typeof ACC !== 'undefined') ? ACC : ["부활의 반지", "불사의 반지", "권능의 반지", "기합의 반지"];
+
+    // --- SHA-256 헬퍼 ---
+    async function sha256(str) {
+        const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+        return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    // --- 이미지 경로 헬퍼 ---
+    function heroImg(n) { return `images/heros/${n}.png`; }
+    function petImg(n)  { return `images/pets/${n}.png`; }
+    function accImg(n)  { return `images/accesories/${n}.png`; }
+    function getAccAbbr(name) {
+        if(!name) return "";
+        let s = name, grade = "";
+        if(s.startsWith("고급 ")) { grade = "★"; s = s.slice(3); }
+        else if(s.startsWith("낡은 ")) { grade = "▼"; s = s.slice(3); }
+        return grade + s.replace("의 반지", "").replace(" 반지", "");
+    }
 
     // 변수
     let myDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
@@ -379,6 +464,10 @@
     let myPetState = "", adminPetState = "", tempEnemyHeroes = [];
     let globalData = { members: [], enemies: [], strategies: [] };
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
+
+    // 사용자 세션 정보
+    let currentUserRole = '';       // 'admin' | 'user'
+    let currentUserMustChangePw = false;
 
     // 강림 원정대 변수
     const ADVENT_BOSSES = ['태오', '카일', '연희', '카르마'];
@@ -541,9 +630,38 @@
                 advent:     adventMapped
             };
 
-            let valid = true;
+            let valid = false;
+            let memberRecord = null;
+
             if(!isAuto) {
-                valid = globalData.members.find(m => String(m.nick) === nick && String(m.key) === key);
+                const hashedKey = await sha256(key);
+                memberRecord = globalData.members.find(m => String(m.nick) === nick && String(m.key) === hashedKey);
+                if(memberRecord) {
+                    if(memberRecord.status === 'active') {
+                        valid = true;
+                    } else if(memberRecord.status === 'pending') {
+                        document.getElementById('loadingArea').classList.add('hidden');
+                        document.getElementById('loginArea').classList.remove('hidden');
+                        msg.innerText = "승인 대기 중입니다. 관리자에게 문의하세요.";
+                        msg.style.color = "#f0d060";
+                        return;
+                    } else {
+                        document.getElementById('loadingArea').classList.add('hidden');
+                        document.getElementById('loginArea').classList.remove('hidden');
+                        msg.innerText = "가입이 거절된 계정입니다.";
+                        msg.style.color = "#d47474";
+                        return;
+                    }
+                }
+            } else {
+                // 자동 로그인: 상태 확인
+                memberRecord = globalData.members.find(m => String(m.nick) === nick);
+                if(memberRecord && memberRecord.status !== 'active') {
+                    clearTimeout(_loginTimeoutId);
+                    logout("계정이 비활성화되었습니다. 관리자에게 문의하세요.");
+                    return;
+                }
+                valid = true; // 자동 로그인은 localStorage 신뢰
             }
 
             document.getElementById('loadingArea').classList.add('hidden');
@@ -551,16 +669,38 @@
             document.getElementById('loadingMsg').innerText = "서버 연결 중...";
 
             if(valid) {
+                // 역할 설정
+                currentUserRole = memberRecord ? (memberRecord.role || 'user') : 'user';
+                currentUserMustChangePw = memberRecord ? (memberRecord.must_change_pw || false) : false;
+
                 localStorage.setItem("guildWarNick", nick);
                 refreshSession();
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('mainArea').classList.remove('hidden');
+
+                // 사용자 정보 표시
+                document.getElementById('userNickDisplay').innerText = nick;
+                document.getElementById('userRoleDisplay').innerHTML =
+                    currentUserRole === 'admin'
+                        ? '<span class="badge-admin">관리자</span>'
+                        : '<span class="badge-user">사용자</span>';
+
+                // 관리자 UI 표시
+                if(currentUserRole === 'admin') {
+                    document.getElementById('adminTabBtn').classList.remove('hidden');
+                    document.getElementById('toggleAdminBtn').classList.remove('hidden');
+                }
+
                 renderDropdowns();
                 loadSiegeFromServer(nick);
                 loadAdventFromServer(nick);
+
+                // 첫 로그인 비밀번호 변경
+                if(currentUserMustChangePw) openPwChangeModal(true);
             } else {
                 document.getElementById('loginArea').classList.remove('hidden');
-                msg.innerText = "불일치"; msg.style.color = "#d47474";
+                msg.innerText = "닉네임 또는 비밀번호가 일치하지 않습니다.";
+                msg.style.color = "#d47474";
             }
         } catch(e) {
             clearTimeout(_loginTimeoutId);
@@ -615,15 +755,18 @@
         let h = "";
         state.forEach((o, i) => {
             const img = o.name ?
-                `<img src="images/${o.name}.png" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
+                `<img src="${heroImg(o.name)}" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
                 : "+";
+            const accContent = o.acc
+                ? `<img src="${accImg(o.acc)}" style="width:22px;height:22px;object-fit:contain;" onerror="this.style.display='none'"><span style="font-size:7px;line-height:1;">${getAccAbbr(o.acc)}</span>`
+                : 'Acc';
 
             h += `<div class="hero-card">
                     <div class="hero-slot" onclick="openSelector('${mode}','HERO',${i})">${img}</div>
                     <div class="equipment-grid">
                         <div class="gear-slot slot-w1" onclick="openGear('${mode}',${i},'w1')">${formatGearSlot(o.w1)||"W1"}</div>
                         <div class="gear-slot slot-a1" onclick="openGear('${mode}',${i},'a1')">${formatGearSlot(o.a1)||"A1"}</div>
-                        <div class="acc-slot" onclick="openAcc('${mode}',${i})">${getAbbr(o.acc)||"Acc"}</div>
+                        <div class="acc-slot" onclick="openAcc('${mode}',${i})" style="flex-direction:column;">${accContent}</div>
                         <div class="gear-slot slot-w2" onclick="openGear('${mode}',${i},'w2')">${formatGearSlot(o.w2)||"W2"}</div>
                         <div class="gear-slot slot-a2" onclick="openGear('${mode}',${i},'a2')">${formatGearSlot(o.a2)||"A2"}</div>
                     </div>
@@ -631,7 +774,7 @@
         });
 
         const pImg = pState ?
-            `<img src="images/${pState}.png" onerror="this.style.display='none'; this.parentNode.innerText='${pState}'">`
+            `<img src="${petImg(pState)}" onerror="this.style.display='none'; this.parentNode.innerText='${pState}'">`
             : "<span style='font-size:10px;color:#888'>PET</span>";
 
         h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('${mode}','PET')">${pImg}</div></div>`;
@@ -662,7 +805,8 @@
         src.filter(x=>x.includes(filter)).forEach(item => {
             const d = document.createElement('div'); d.className='hero-item';
             d.onclick=()=>{confirmSel(type,item)};
-            d.innerHTML=`<div class="hero-circle"><img src="images/${item}.png" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
+            const imgSrc = type === 'HERO' ? heroImg(item) : petImg(item);
+            d.innerHTML=`<div class="hero-circle"><img src="${imgSrc}" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
             g.appendChild(d);
         });
     }
@@ -733,11 +877,13 @@
         currentMode=mode; currentGearIndex=idx;
         const l=document.getElementById('accList'); l.innerHTML="";
         GEAR_ACCESSORIES.forEach(x=>{
-            const b=document.createElement('button'); b.className="acc-btn"; b.innerText=x;
+            const b=document.createElement('button'); b.className="acc-btn";
+            b.innerHTML=`<img src="${accImg(x)}" onerror="this.style.display='none'"><span>${x}</span>`;
             b.onclick=()=>{s[currentGearIndex].acc=x; renderDeckByMode(currentMode); closeAccModal();};
             l.appendChild(b);
         });
-        const r=document.createElement('button'); r.className="acc-btn"; r.innerText="(해제)"; r.style.borderColor="red";
+        const r=document.createElement('button'); r.className="acc-btn"; r.style.borderColor="red";
+        r.innerHTML=`<span style="font-size:18px;color:#d47474;">✕</span><span style="color:#d47474;">(해제)</span>`;
         r.onclick=()=>{s[currentGearIndex].acc=""; renderDeckByMode(currentMode); closeAccModal();}; l.appendChild(r);
         document.getElementById('accModal').style.display='flex';
     }
@@ -760,7 +906,7 @@
         let h="";
         e.deck.split(',').forEach(x=>{
             const name=x.split('(')[0].trim();
-            h+=`<div class="hero-slot" style="margin:0 2px; border-color:#d47474;"><img src="images/${name}.png" onerror="this.style.display='none';this.parentNode.innerText='${name[0]}'"></div>`;
+            h+=`<div class="hero-slot" style="margin:0 2px; border-color:#d47474;"><img src="${heroImg(name)}" onerror="this.style.display='none';this.parentNode.innerText='${name[0]}'"></div>`;
         });
         v.innerHTML=h;
 
@@ -773,7 +919,7 @@
                 s.attack.split(',').forEach(k=>{
                     const firstParen = k.indexOf('(');
                     const name = firstParen > 0 ? k.substring(0, firstParen).trim() : k.trim();
-                    icons+=`<div class="strategy-icon"><img src="images/${name}.png" onerror="this.style.display='none';"></div>`;
+                    icons+=`<div class="strategy-icon"><img src="${heroImg(name)}" onerror="this.style.display='none';"></div>`;
                 });
                 sh+=`<div class="strategy-card" onclick='applyStrategy(${JSON.stringify(s)})'>
                         <div style="display:flex;justify-content:space-between;"><span style="color:#f0d060">추천 #${i+1} (${s.formation})</span><span style="font-size:0.8em;color:#8090a8">${s.pet}</span></div>
@@ -894,7 +1040,7 @@
     }
 
     function updateEnemyPrev() {
-        for(let i=1; i<=5; i++) document.getElementById(`preview_enemy_${i}`).innerHTML=tempEnemyHeroes[i-1]?`<img src="images/${tempEnemyHeroes[i-1]}.png" style="width:100%;height:100%;object-fit:cover;">`:"+";
+        for(let i=1; i<=5; i++) document.getElementById(`preview_enemy_${i}`).innerHTML=tempEnemyHeroes[i-1]?`<img src="${heroImg(tempEnemyHeroes[i-1])}" style="width:100%;height:100%;object-fit:cover;">`:"+";
         document.getElementById('newEnemyDeckResult').value=tempEnemyHeroes.join(',');
     }
 
@@ -902,13 +1048,183 @@
 
     // --- 탭 전환 ---
     function switchTab(tab) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        const tabMap = ['guild','siege','advent','admin'];
+        const idx = tabMap.indexOf(tab);
         const btns = document.querySelectorAll('.tab-btn');
-        btns[0].classList.toggle('active', tab==='guild');
-        btns[1].classList.toggle('active', tab==='siege');
-        btns[2].classList.toggle('active', tab==='advent');
+        if(idx >= 0 && btns[idx]) btns[idx].classList.add('active');
+
         document.getElementById('guildWarTab').classList.toggle('hidden', tab!=='guild');
         document.getElementById('siegeWarTab').classList.toggle('hidden', tab!=='siege');
         document.getElementById('adventTab').classList.toggle('hidden', tab!=='advent');
+        document.getElementById('adminMgmtTab').classList.toggle('hidden', tab!=='admin');
+
+        if(tab === 'admin') loadAdminTab();
+    }
+
+    // --- 가입 신청 ---
+    function toggleSignup() {
+        document.getElementById('signupArea').classList.toggle('hidden');
+        document.getElementById('signupMsg').style.display = 'none';
+    }
+
+    async function submitSignup(ev) {
+        const nick = document.getElementById('signupNick').value.trim();
+        const key  = document.getElementById('signupKey').value;
+        const keyC = document.getElementById('signupKeyConfirm').value;
+        const msg  = document.getElementById('signupMsg');
+
+        const showMsg = (text, color='#d47474') => {
+            msg.style.display='block'; msg.style.color=color; msg.innerText=text;
+        };
+
+        if(!nick || !key) return showMsg('닉네임과 비밀번호를 입력하세요.');
+        if(key.length < 4)  return showMsg('비밀번호는 4자 이상이어야 합니다.');
+        if(key !== keyC)    return showMsg('비밀번호가 일치하지 않습니다.');
+
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText='신청 중...';
+        try {
+            const existing = await sbFetch("GET", "members", null, `?nick=eq.${encodeURIComponent(nick)}&select=id`);
+            if(existing && existing.length > 0) {
+                showMsg('이미 사용 중인 닉네임입니다.');
+            } else {
+                const hashedKey = await sha256(key);
+                await sbFetch("POST", "members",
+                    { nick, key: hashedKey, role:'user', status:'pending', must_change_pw:false },
+                    "", {"Prefer":"return=minimal"});
+                showMsg('신청 완료! 관리자 승인 후 로그인 가능합니다.', '#6bbd7a');
+                document.getElementById('signupNick').value='';
+                document.getElementById('signupKey').value='';
+                document.getElementById('signupKeyConfirm').value='';
+            }
+        } catch(e) { showMsg('오류가 발생했습니다.'); }
+        btn.disabled=false; btn.innerText=orig;
+    }
+
+    // --- 비밀번호 변경 ---
+    function openPwChangeModal(forced=false) {
+        document.getElementById('pwChangeReason').innerText =
+            forced ? '⚠️ 첫 로그인입니다. 비밀번호를 변경해주세요.' : '';
+        document.getElementById('pwSkipBtn').style.display = forced ? 'none' : '';
+        document.getElementById('pwNew').value = '';
+        document.getElementById('pwNewConfirm').value = '';
+        document.getElementById('pwChangeMsg').style.display = 'none';
+        document.getElementById('pwChangeModal').style.display = 'flex';
+    }
+    function closePwChangeModal() {
+        document.getElementById('pwChangeModal').style.display = 'none';
+    }
+    async function changePassword(ev) {
+        const newKey  = document.getElementById('pwNew').value;
+        const confirm = document.getElementById('pwNewConfirm').value;
+        const msgEl   = document.getElementById('pwChangeMsg');
+        const showMsg = (t) => { msgEl.style.display='block'; msgEl.innerText=t; };
+
+        if(!newKey || newKey.length < 4) return showMsg('비밀번호는 4자 이상이어야 합니다.');
+        if(newKey !== confirm) return showMsg('비밀번호가 일치하지 않습니다.');
+
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText='변경 중...';
+        try {
+            const nick = document.getElementById('myNick').value;
+            const hashedKey = await sha256(newKey);
+            await sbFetch("PATCH", "members",
+                { key: hashedKey, must_change_pw: false },
+                `?nick=eq.${encodeURIComponent(nick)}`,
+                {"Prefer":"return=minimal"});
+            currentUserMustChangePw = false;
+            closePwChangeModal();
+            alert('비밀번호가 변경되었습니다.');
+        } catch(e) { showMsg('변경 오류가 발생했습니다.'); }
+        btn.disabled=false; btn.innerText=orig;
+    }
+
+    // --- 관리자: 멤버 관리 ---
+    async function loadAdminTab() {
+        await Promise.all([loadPendingMembers(), loadAllMembers()]);
+    }
+
+    async function loadPendingMembers() {
+        const el = document.getElementById('pendingMembersList');
+        el.innerHTML = '<p style="color:#8090a8;">로딩 중...</p>';
+        try {
+            const rows = await sbFetch("GET", "members", null, "?status=eq.pending&select=*&order=id.asc");
+            if(!rows || rows.length === 0) {
+                el.innerHTML = '<p style="color:#5f6d82;">대기 중인 신청이 없습니다.</p>'; return;
+            }
+            el.innerHTML = rows.map(m => `
+                <div class="member-card">
+                    <span class="mc-name">${m.nick}</span>
+                    <div class="mc-btns">
+                        <button onclick="approveMember(${m.id})" style="background:#3a7a50;">승인</button>
+                        <button onclick="rejectMember(${m.id},'${m.nick}')" style="background:#8a4040;">거절</button>
+                    </div>
+                </div>`).join('');
+        } catch(e) { el.innerHTML = '<p style="color:#d47474;">로드 오류</p>'; }
+    }
+
+    async function loadAllMembers() {
+        const el = document.getElementById('allMembersList');
+        el.innerHTML = '<p style="color:#8090a8;">로딩 중...</p>';
+        try {
+            const rows = await sbFetch("GET", "members", null, "?status=eq.active&select=*&order=nick.asc");
+            if(!rows || rows.length === 0) {
+                el.innerHTML = '<p style="color:#5f6d82;">멤버가 없습니다.</p>'; return;
+            }
+            const myNick = document.getElementById('myNick').value;
+            el.innerHTML = rows.map(m => `
+                <div class="member-card">
+                    <div>
+                        <span class="mc-name">${m.nick}</span>
+                        <span class="${m.role==='admin'?'badge-admin':'badge-user'}" style="margin-left:6px;">${m.role==='admin'?'관리자':'사용자'}</span>
+                        ${m.must_change_pw ? '<span style="margin-left:4px;font-size:10px;color:#f0d060;">🔑</span>' : ''}
+                    </div>
+                    <div class="mc-btns">
+                        ${m.nick !== myNick ? `
+                            <button onclick="toggleMemberRole(${m.id},'${m.role}')" style="background:#3a4758;" title="권한 변경">${m.role==='admin'?'→사용자':'→관리자'}</button>
+                            <button onclick="forcePwReset(${m.id})" style="background:#4a5040;" title="비밀번호 재설정 요청">🔑</button>
+                            <button onclick="kickMember(${m.id},'${m.nick}')" style="background:#8a4040;">추방</button>
+                        ` : '<span style="font-size:11px;color:#5f6d82;">(본인)</span>'}
+                    </div>
+                </div>`).join('');
+        } catch(e) { el.innerHTML = '<p style="color:#d47474;">로드 오류</p>'; }
+    }
+
+    async function approveMember(id) {
+        try {
+            await sbFetch("PATCH","members",{status:'active'},`?id=eq.${id}`,{"Prefer":"return=minimal"});
+            await loadPendingMembers(); await loadAllMembers();
+        } catch(e) { alert('오류'); }
+    }
+    async function rejectMember(id, nick) {
+        if(!confirm(`${nick}님의 신청을 거절하시겠습니까?`)) return;
+        try {
+            await sbFetch("PATCH","members",{status:'rejected'},`?id=eq.${id}`,{"Prefer":"return=minimal"});
+            await loadPendingMembers();
+        } catch(e) { alert('오류'); }
+    }
+    async function toggleMemberRole(id, currentRole) {
+        const newRole = currentRole === 'admin' ? 'user' : 'admin';
+        if(!confirm(`권한을 '${newRole === 'admin' ? '관리자' : '사용자'}'로 변경하시겠습니까?`)) return;
+        try {
+            await sbFetch("PATCH","members",{role:newRole},`?id=eq.${id}`,{"Prefer":"return=minimal"});
+            await loadAllMembers();
+        } catch(e) { alert('오류'); }
+    }
+    async function forcePwReset(id) {
+        if(!confirm('다음 로그인 시 비밀번호 변경을 요청하시겠습니까?')) return;
+        try {
+            await sbFetch("PATCH","members",{must_change_pw:true},`?id=eq.${id}`,{"Prefer":"return=minimal"});
+            await loadAllMembers();
+        } catch(e) { alert('오류'); }
+    }
+    async function kickMember(id, nick) {
+        if(!confirm(`${nick}님을 추방하시겠습니까?`)) return;
+        try {
+            await sbFetch("PATCH","members",{status:'rejected'},`?id=eq.${id}`,{"Prefer":"return=minimal"});
+            await loadAllMembers();
+        } catch(e) { alert('오류'); }
     }
 
     // --- 요일 전환 ---
@@ -1021,15 +1337,18 @@
         let h = "";
         siegeDeckState.forEach((o, i) => {
             const img = o.name ?
-                `<img src="images/${o.name}.png" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
+                `<img src="${heroImg(o.name)}" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
                 : "+";
+            const accContent = o.acc
+                ? `<img src="${accImg(o.acc)}" style="width:22px;height:22px;object-fit:contain;" onerror="this.style.display='none'"><span style="font-size:7px;line-height:1;">${getAccAbbr(o.acc)}</span>`
+                : 'Acc';
 
             h += `<div class="hero-card">
                     <div class="hero-slot" onclick="openSelector('siege','HERO',${i})">${img}</div>
                     <div class="equipment-grid">
                         <div class="gear-slot slot-w1" onclick="openGear('siege',${i},'w1')">${formatGearSlot(o.w1)||"W1"}</div>
                         <div class="gear-slot slot-a1" onclick="openGear('siege',${i},'a1')">${formatGearSlot(o.a1)||"A1"}</div>
-                        <div class="acc-slot" onclick="openAcc('siege',${i})">${getAbbr(o.acc)||"Acc"}</div>
+                        <div class="acc-slot" onclick="openAcc('siege',${i})" style="flex-direction:column;">${accContent}</div>
                         <div class="gear-slot slot-w2" onclick="openGear('siege',${i},'w2')">${formatGearSlot(o.w2)||"W2"}</div>
                         <div class="gear-slot slot-a2" onclick="openGear('siege',${i},'a2')">${formatGearSlot(o.a2)||"A2"}</div>
                     </div>
@@ -1041,7 +1360,7 @@
         });
 
         const pImg = siegePetState ?
-            `<img src="images/${siegePetState}.png" onerror="this.style.display='none'; this.parentNode.innerText='${siegePetState}'">`
+            `<img src="${petImg(siegePetState)}" onerror="this.style.display='none'; this.parentNode.innerText='${siegePetState}'">`
             : "<span style='font-size:10px;color:#888'>PET</span>";
 
         h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('siege','PET')">${pImg}</div></div>`;
@@ -1073,7 +1392,7 @@
         skillPipeline.forEach((item, i) => {
             if(i > 0) h += `<span class="pipeline-arrow">\u2192</span>`;
             h += `<div class="pipeline-item s${item.skill}">
-                    <div class="pi-icon"><img src="images/${item.hero}.png" onerror="this.style.display='none';"></div>
+                    <div class="pi-icon"><img src="${heroImg(item.hero)}" onerror="this.style.display='none';"></div>
                     ${item.hero}(S${item.skill})
                   </div>`;
         });
@@ -1098,7 +1417,7 @@
             const imgStyle = isFinal ? ' style="background:#5a2030; border-color:#d47474;"' : '';
             const btnClass = `advent-boss-btn${isActive?' active':''}${isFinal?' final-boss':''}`;
             h += `<button class="${btnClass}" onclick="switchAdventBoss('${boss}')">
-                    <div class="advent-boss-img"${imgStyle}><img src="images/${boss}.png" onerror="this.style.display='none'; this.parentNode.innerText='${boss[0]}'"></div>
+                    <div class="advent-boss-img"${imgStyle}><img src="${heroImg(boss)}" onerror="this.style.display='none'; this.parentNode.innerText='${boss[0]}'"></div>
                     <span>${boss}</span>
                   </button>`;
         });
@@ -1146,13 +1465,16 @@
         let h = "";
         state.forEach((o, i) => {
             const img = o.name ?
-                `<img src="images/${o.name}.png" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">` : "+";
+                `<img src="${heroImg(o.name)}" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">` : "+";
+            const accContent = o.acc
+                ? `<img src="${accImg(o.acc)}" style="width:22px;height:22px;object-fit:contain;" onerror="this.style.display='none'"><span style="font-size:7px;line-height:1;">${getAccAbbr(o.acc)}</span>`
+                : 'Acc';
             h += `<div class="hero-card">
                     <div class="hero-slot" onclick="openSelector('${mode}','HERO',${i})">${img}</div>
                     <div class="equipment-grid">
                         <div class="gear-slot slot-w1" onclick="openGear('${mode}',${i},'w1')">${formatGearSlot(o.w1)||"W1"}</div>
                         <div class="gear-slot slot-a1" onclick="openGear('${mode}',${i},'a1')">${formatGearSlot(o.a1)||"A1"}</div>
-                        <div class="acc-slot" onclick="openAcc('${mode}',${i})">${getAbbr(o.acc)||"Acc"}</div>
+                        <div class="acc-slot" onclick="openAcc('${mode}',${i})" style="flex-direction:column;">${accContent}</div>
                         <div class="gear-slot slot-w2" onclick="openGear('${mode}',${i},'w2')">${formatGearSlot(o.w2)||"W2"}</div>
                         <div class="gear-slot slot-a2" onclick="openGear('${mode}',${i},'a2')">${formatGearSlot(o.a2)||"A2"}</div>
                     </div>
@@ -1164,7 +1486,7 @@
         });
 
         const pImg = petState ?
-            `<img src="images/${petState}.png" onerror="this.style.display='none'; this.parentNode.innerText='${petState}'">` :
+            `<img src="${petImg(petState)}" onerror="this.style.display='none'; this.parentNode.innerText='${petState}'">` :
             "<span style='font-size:10px;color:#888'>PET</span>";
         h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('${mode}','PET')">${pImg}</div></div>`;
         container.innerHTML = h;
@@ -1186,7 +1508,7 @@
         pipeline.forEach((item, i) => {
             if(i > 0) h += `<span class="pipeline-arrow">\u2192</span>`;
             h += `<div class="pipeline-item s${item.skill}">
-                    <div class="pi-icon"><img src="images/${item.hero}.png" onerror="this.style.display='none';"></div>
+                    <div class="pi-icon"><img src="${heroImg(item.hero)}" onerror="this.style.display='none';"></div>
                     ${item.hero}(S${item.skill})
                   </div>`;
         });
