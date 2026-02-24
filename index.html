@@ -191,8 +191,8 @@
         <div class="box neon-red">
             <h3>3. 결과 기록</h3>
             <div style="display:flex; gap:10px;">
-                <button onclick="record('WIN')" style="background:#3a7a50;">⭐⭐⭐ 승리</button>
-                <button onclick="record('LOSE')" style="background:#8a4040;">❌ 패배</button>
+                <button onclick="record(event,'WIN')" style="background:#3a7a50;">⭐⭐⭐ 승리</button>
+                <button onclick="record(event,'LOSE')" style="background:#8a4040;">❌ 패배</button>
             </div>
         </div>
 
@@ -209,7 +209,7 @@
                 <div class="deck-container" id="newAttackDeckContainer"></div>
                 <input type="hidden" id="newAttackDeckResult"><input type="hidden" id="newAttackPetResult">
                 <textarea id="newStrategyNote" placeholder="상세 공략 작성" style="height:60px;"></textarea>
-                <button onclick="addStrategy()">공략 등록 완료</button>
+                <button onclick="addStrategy(event)">공략 등록 완료</button>
             </div>
             <div class="box neon-blue">
                 <h3>👾 적군 추가</h3>
@@ -218,7 +218,7 @@
                     <div id="preview_enemy_1" class="hero-slot">+</div><div id="preview_enemy_2" class="hero-slot">+</div><div id="preview_enemy_3" class="hero-slot">+</div><div id="preview_enemy_4" class="hero-slot">+</div><div id="preview_enemy_5" class="hero-slot">+</div>
                 </div>
                 <input type="hidden" id="newEnemyDeckResult">
-                <button onclick="addNewEnemy()">적군 등록 완료</button>
+                <button onclick="addNewEnemy(event)">적군 등록 완료</button>
             </div>
         </div>
         </div><!-- /guildWarTab -->
@@ -260,7 +260,7 @@
                 </div>
             </div>
 
-            <button onclick="saveSiege()" style="background:#3a7a50; margin-top:10px;">저장</button>
+            <button onclick="saveSiege(event)" style="background:#3a7a50; margin-top:10px;">저장</button>
         </div>
         </div><!-- /siegeWarTab -->
 
@@ -314,7 +314,7 @@
                     </div>
                 </div>
 
-                <button onclick="saveAdvent()" style="background:#3a7a50; margin-top:10px;">💾 저장</button>
+                <button onclick="saveAdvent(event)" style="background:#3a7a50; margin-top:10px;">💾 저장</button>
             </div>
         </div><!-- /adventTab -->
 
@@ -357,11 +357,11 @@
 </div>
 
 <script>
-    // ⚠️ 본인의 GAS URL 입력 ⚠️
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbw1ps_ms3HhsMmb7YC0x1Bs889uWbgFNoDz1LQHtgxVjsXWoJ3SatIkMr1pN_UI5UYv/exec";
+    // ⚙️ Supabase 설정
+    const SUPABASE_URL = "https://zobzzgvbqmkistvdlexi.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvYnp6Z3ZicW1raXN0dmRsZXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzAzODMsImV4cCI6MjA4NzQ0NjM4M30.uVjldZvtNsiA-_OAMf4y_Q_S0fHCnDHQinqQ4R10zS0"; // ⚠️ 대시보드 > Settings > API > anon public key 입력
 
     // --- 설정값 ---
-    // ⏳ 세션 타임아웃 시간 설정 (기본 60분: 60 * 60 * 1000)
     const SESSION_TIMEOUT = 60 * 60 * 1000;
 
     // 데이터 정의
@@ -399,16 +399,14 @@
     let currentSiegeDay = "";
     let siegeData = {};
     DAYS.forEach(d => { siegeData[d] = { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" }; });
-    // 현재 요일 활성 상태 (참조용)
     let siegeDeckState = siegeData.mon.deck;
     let siegePetState = "";
     let skillPipeline = [];
 
     // --- 초기화 및 세션 체크 ---
     window.onload = function() {
-        checkSession(); // 페이지 로드 시 세션 확인
+        checkSession();
 
-        // Keep Alive: 사용자가 클릭이나 키 입력을 할 때마다 세션 연장
         document.addEventListener('click', refreshSession);
         document.addEventListener('keydown', refreshSession);
         document.addEventListener('touchstart', refreshSession);
@@ -416,28 +414,23 @@
         renderInteractiveDeck('myBattle');
         renderInteractiveDeck('attack');
 
-        // 오늘 요일 자동 선택 (JS: 0=일,1=월,...6=토)
         const jsDay = new Date().getDay();
-        const dayMap = [6,0,1,2,3,4,5]; // JS요일→DAYS인덱스
+        const dayMap = [6,0,1,2,3,4,5];
         switchSiegeDay(DAYS[dayMap[jsDay]]);
 
         renderAdventBossNav();
         loadAdventBossState(currentAdventBoss);
     };
 
-    // 🕒 세션 확인 로직
     function checkSession() {
         const savedNick = localStorage.getItem("guildWarNick");
-        const expiryTime = localStorage.getItem("guildWarExpiry"); // 만료 예정 시간
+        const expiryTime = localStorage.getItem("guildWarExpiry");
 
         if (savedNick && expiryTime) {
             const now = new Date().getTime();
-
             if (now > parseInt(expiryTime)) {
-                // 시간 만료됨
                 logout("세션이 만료되었습니다. 다시 로그인해주세요.");
             } else {
-                // 유효함 -> 로딩 화면 표시 후 자동 로그인 진행
                 document.getElementById('loadingArea').classList.remove('hidden');
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('myNick').value = savedNick;
@@ -446,21 +439,37 @@
         }
     }
 
-    // 🕒 세션 연장 (Keep Alive)
     function refreshSession() {
-        // 로그인 상태일 때만 연장
         if (!document.getElementById('mainArea').classList.contains('hidden')) {
-            const newExpiry = new Date().getTime() + SESSION_TIMEOUT;
-            localStorage.setItem("guildWarExpiry", newExpiry);
+            localStorage.setItem("guildWarExpiry", new Date().getTime() + SESSION_TIMEOUT);
         }
     }
 
-    // 🚪 로그아웃 처리
     function logout(msg = "") {
         localStorage.removeItem("guildWarNick");
         localStorage.removeItem("guildWarExpiry");
         if(msg) alert(msg);
         location.reload();
+    }
+
+    // --- Supabase REST API 헬퍼 ---
+    async function sbFetch(method, table, body=null, params="", extraHeaders={}, signal=null) {
+        const url = `${SUPABASE_URL}/rest/v1/${table}${params}`;
+        const opts = {
+            method,
+            headers: {
+                "apikey": SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${SUPABASE_ANON_KEY}`,
+                "Content-Type": "application/json",
+                ...extraHeaders
+            }
+        };
+        if(signal) opts.signal = signal;
+        if(body !== null) opts.body = JSON.stringify(body);
+        const r = await fetch(url, opts);
+        if(!r.ok) throw new Error(await r.text());
+        const text = await r.text();
+        return text ? JSON.parse(text) : null;
     }
 
     // --- 로그인 ---
@@ -474,16 +483,17 @@
         document.getElementById('loginArea').classList.remove('hidden');
     }
 
-    function tryLogin(isAuto=false) {
-        const nick = document.getElementById('myNick').value, key = document.getElementById('myKey').value;
-        const msg = document.getElementById('loginMsg');
+    async function tryLogin(isAuto=false) {
+        const nick = document.getElementById('myNick').value;
+        const key  = document.getElementById('myKey').value;
+        const msg  = document.getElementById('loginMsg');
 
         if(!isAuto && (!nick||!key)) return alert("입력하세요");
 
-        msg.style.display='block';
+        msg.style.display = 'block';
         if(!isAuto) msg.innerText = "서버 연결 중...";
 
-        // 자동 로그인: 10초 타임아웃 후 취소 버튼 노출
+        let signal = undefined;
         if(isAuto) {
             _loginAbortController = new AbortController();
             _loginTimeoutId = setTimeout(() => {
@@ -491,18 +501,49 @@
                 document.getElementById('loadingMsg').innerText = "연결이 지연되고 있습니다.";
                 document.getElementById('loadingCancelBtn').classList.remove('hidden');
             }, 10000);
+            signal = _loginAbortController.signal;
         }
 
-        const fetchOpts = isAuto ? { signal: _loginAbortController.signal } : {};
+        try {
+            const nickParam = encodeURIComponent(nick);
+            const [members, enemies, strategies, siege, advent] = await Promise.all([
+                sbFetch("GET", "members",    null, "?select=*", {}, signal),
+                sbFetch("GET", "enemies",    null, "?select=*", {}, signal),
+                sbFetch("GET", "strategies", null, "?select=*", {}, signal),
+                sbFetch("GET", "siege",      null, `?select=*&nickname=eq.${nickParam}`, {}, signal),
+                sbFetch("GET", "advent",     null, `?select=*&nickname=eq.${nickParam}`, {}, signal)
+            ]);
 
-        fetch(GAS_URL, fetchOpts).then(r=>r.json()).then(d => {
             clearTimeout(_loginTimeoutId);
-            globalData = d;
+
+            // advent 컬럼명 변환 (snake_case → camelCase)
+            const adventMapped = (advent||[]).map(row => ({
+                nickname:       row.nickname,
+                boss:           row.boss,
+                team1Deck:      row.team1_deck      || "",
+                team1Pet:       row.team1_pet        || "",
+                team1Formation: row.team1_formation  || "기본",
+                team1Memo:      row.team1_memo       || "",
+                team1Pipeline:  row.team1_pipeline   || "",
+                team2Deck:      row.team2_deck       || "",
+                team2Pet:       row.team2_pet        || "",
+                team2Formation: row.team2_formation  || "기본",
+                team2Memo:      row.team2_memo       || "",
+                team2Pipeline:  row.team2_pipeline   || "",
+                cleared:        row.cleared          || "false"
+            }));
+
+            globalData = {
+                members:    members    || [],
+                enemies:    enemies    || [],
+                strategies: strategies || [],
+                siege:      siege      || [],
+                advent:     adventMapped
+            };
 
             let valid = true;
-            // 수동 로그인일 때만 키 검사 (자동 로그인은 이미 로컬스토리지 신뢰)
-            if(d.members && d.members.length > 0 && !isAuto) {
-                valid = d.members.find(m => String(m.nick)===nick && String(m.key)===key);
+            if(!isAuto) {
+                valid = globalData.members.find(m => String(m.nick) === nick && String(m.key) === key);
             }
 
             document.getElementById('loadingArea').classList.add('hidden');
@@ -510,10 +551,8 @@
             document.getElementById('loadingMsg').innerText = "서버 연결 중...";
 
             if(valid) {
-                // 로그인 성공 시 세션 저장 (현재시간 + 타임아웃)
                 localStorage.setItem("guildWarNick", nick);
-                refreshSession(); // 시간 설정
-
+                refreshSession();
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('mainArea').classList.remove('hidden');
                 renderDropdowns();
@@ -523,7 +562,7 @@
                 document.getElementById('loginArea').classList.remove('hidden');
                 msg.innerText = "불일치"; msg.style.color = "#d47474";
             }
-        }).catch(e=>{
+        } catch(e) {
             clearTimeout(_loginTimeoutId);
             document.getElementById('loadingArea').classList.add('hidden');
             document.getElementById('loadingCancelBtn').classList.add('hidden');
@@ -531,7 +570,7 @@
             document.getElementById('loginArea').classList.remove('hidden');
             msg.innerText = e.name === 'AbortError' ? "연결 시간 초과. 다시 시도해주세요." : "통신오류";
             msg.style.color = "#d47474";
-        });
+        }
     }
 
     function renderDropdowns() {
@@ -778,31 +817,11 @@
 
         renderInteractiveDeck('myBattle');
         document.querySelector('.neon-purple').scrollIntoView({behavior:'smooth'});
-        refreshSession(); // 활동 감지
+        refreshSession();
     }
 
-    // --- 비동기 전송 (깜빡임 해결) ---
-    function sendData(payload, successCallback) {
-        const btn = event.target;
-        const originalText = btn.innerText;
-        btn.disabled = true; btn.innerText = "처리 중...";
-
-        fetch(GAS_URL, {
-            method: "POST", mode: "no-cors", headers: {"Content-Type":"application/json"},
-            body: JSON.stringify(payload)
-        }).then(() => {
-            // 성공 시 수행할 콜백 함수 실행
-            if(successCallback) successCallback();
-
-            refreshSession(); // 활동으로 간주하여 세션 연장
-            btn.disabled = false; btn.innerText = originalText;
-        }).catch(err => {
-            alert("전송 오류");
-            btn.disabled = false; btn.innerText = originalText;
-        });
-    }
-
-    function addStrategy() {
+    // --- 데이터 쓰기 (Supabase) ---
+    async function addStrategy(ev) {
         const t=document.getElementById('targetEnemySelect').value, d=document.getElementById('newAttackDeckResult').value;
         const p=document.getElementById('newAttackPetResult').value, f=document.getElementById('newFormation').value;
         const i=document.getElementById('newKeyItems').value, n=document.getElementById('newStrategyNote').value;
@@ -810,48 +829,68 @@
 
         if(!t||!d) return alert("필수 입력 누락");
 
-        sendData({
-            action: "add_strategy", targetEnemy:t, attackDeck:d, pet:p, formation:f, keyItems:i, note:n, author:a
-        }, () => {
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText="처리 중...";
+        try {
+            await sbFetch("POST", "strategies",
+                { target:t, attack:d, pet:p, formation:f, items:i, note:n, author:a },
+                "", {"Prefer":"return=minimal"});
+
             alert("공략 등록 완료!");
-            // 로컬 데이터에 즉시 추가 (새로고침 없이 반영)
             globalData.strategies.push({target:t, attack:d, pet:p, formation:f, items:i, note:n, author:a});
-            // 현재 화면이 해당 적을 보고 있다면 바로 갱신
             if(document.getElementById('enemySelect').value === t) selectEnemy();
 
-            // 입력창 초기화
             document.getElementById('newKeyItems').value=""; document.getElementById('newStrategyNote').value="";
-            adminDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
+            adminDeckState = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
             adminPetState = "";
             renderInteractiveDeck('attack');
-        });
+            refreshSession();
+        } catch(e) { alert("전송 오류"); }
+        btn.disabled=false; btn.innerText=orig;
     }
 
-    function addNewEnemy() {
+    async function addNewEnemy(ev) {
         const n=document.getElementById('newEnemyName').value, d=document.getElementById('newEnemyDeckResult').value;
         if(!n||!d) return alert("입력 누락");
 
-        sendData({action:"add_enemy", enemyName:n, defenseDeck:d}, () => {
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText="처리 중...";
+        try {
+            await sbFetch("POST", "enemies",
+                { name:n, deck:d },
+                "", {"Prefer":"return=minimal"});
+
             alert("적군 등록 완료!");
             globalData.enemies.push({name:n, deck:d});
             renderDropdowns();
-            // 입력창 초기화
             document.getElementById('newEnemyName').value="";
             tempEnemyHeroes=[]; updateEnemyPrev();
-        });
+            refreshSession();
+        } catch(e) { alert("전송 오류"); }
+        btn.disabled=false; btn.innerText=orig;
     }
 
-    function record(r) {
+    async function record(ev, r) {
         const t=document.getElementById('enemySelect').value, d=document.getElementById('myBattleDeckResult').value;
         if(!t||!d) return alert("필수 정보 누락");
 
-        sendData({
-            action: "record", nickname:document.getElementById('myNick').value, enemyName:t,
-            enemyDeck:document.getElementById('currentEnemyDeck').value, myDeck:d,
-            pet:document.getElementById('myBattlePetResult').value, formation:document.getElementById('myFormation').value, result:r
-        }, () => {
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText="처리 중...";
+        try {
+            await sbFetch("POST", "battle_records", {
+                nickname:   document.getElementById('myNick').value,
+                enemy_name: t,
+                enemy_deck: document.getElementById('currentEnemyDeck').value,
+                my_deck:    d,
+                pet:        document.getElementById('myBattlePetResult').value,
+                formation:  document.getElementById('myFormation').value,
+                result:     r
+            }, "", {"Prefer":"return=minimal"});
+
             alert("기록 완료!");
-        });
+            refreshSession();
+        } catch(e) { alert("전송 오류"); }
+        btn.disabled=false; btn.innerText=orig;
     }
 
     function updateEnemyPrev() {
@@ -860,7 +899,6 @@
     }
 
     function toggleAdmin() { document.getElementById('adminArea').classList.toggle('hidden'); }
-    function closeSelectorModal() { document.getElementById('selectorModal').style.display = 'none'; }
 
     // --- 탭 전환 ---
     function switchTab(tab) {
@@ -916,7 +954,6 @@
             sd.memo = s.memo || "";
             sd.pet = s.pet || "";
 
-            // 덱 파싱
             if(s.deck) {
                 sd.deck = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
                 s.deck.split(',').map(p=>p.trim()).forEach((p, i) => {
@@ -926,13 +963,10 @@
                         sd.deck[i].name = p.substring(0, fp).trim();
                         const g = p.substring(fp+1, lp).split('/');
                         sd.deck[i].w1=g[0]||""; sd.deck[i].a1=g[1]||""; sd.deck[i].w2=g[2]||""; sd.deck[i].a2=g[3]||""; sd.deck[i].acc=g[4]||"";
-                    } else {
-                        sd.deck[i].name = p;
-                    }
+                    } else { sd.deck[i].name = p; }
                 });
             }
 
-            // 파이프라인 파싱: "영웅A(S1) → 영웅B(S2)" 형식
             sd.pipeline = [];
             if(s.pipeline) {
                 s.pipeline.split('→').map(x=>x.trim()).filter(x=>x).forEach(token => {
@@ -942,14 +976,13 @@
             }
         });
 
-        // 현재 선택된 요일 다시 로드
         loadDayState(currentSiegeDay);
         renderSiegeDeck();
         renderPipeline();
     }
 
     // --- 공성전 저장 ---
-    function saveSiege() {
+    async function saveSiege(ev) {
         saveCurrentDayState();
         const sd = siegeData[currentSiegeDay];
         const nick = document.getElementById('myNick').value;
@@ -963,18 +996,23 @@
 
         if(!deckStr) return alert("영웅을 배치해주세요");
 
-        sendData({
-            action: "save_siege",
-            nickname: nick,
-            day: currentSiegeDay,
-            deck: deckStr,
-            pet: sd.pet,
-            formation: sd.formation,
-            memo: sd.memo,
-            pipeline: pipeStr
-        }, () => {
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText="처리 중...";
+        try {
+            await sbFetch("POST", "siege", {
+                nickname:  nick,
+                day:       currentSiegeDay,
+                deck:      deckStr,
+                pet:       sd.pet,
+                formation: sd.formation,
+                memo:      sd.memo,
+                pipeline:  pipeStr
+            }, "?on_conflict=nickname,day", {"Prefer":"resolution=merge-duplicates,return=minimal"});
+
             alert(`${DAY_LABELS[currentSiegeDay]}요일 공성전 저장 완료!`);
-        });
+            refreshSession();
+        } catch(e) { alert("저장 오류"); }
+        btn.disabled=false; btn.innerText=orig;
     }
 
     // --- 공성전 덱 렌더링 ---
@@ -1018,15 +1056,8 @@
         renderPipeline();
     }
 
-    function undoPipeline() {
-        skillPipeline.pop();
-        renderPipeline();
-    }
-
-    function clearPipeline() {
-        skillPipeline = [];
-        renderPipeline();
-    }
+    function undoPipeline() { skillPipeline.pop(); renderPipeline(); }
+    function clearPipeline() { skillPipeline = []; renderPipeline(); }
 
     function renderPipeline() {
         const display = document.getElementById('pipelineDisplay');
@@ -1170,17 +1201,10 @@
         renderAdventPipeline(teamNum);
     }
 
-    function undoAdventPipeline(teamNum) {
-        adventData[currentAdventBoss][`team${teamNum}`].pipeline.pop();
-        renderAdventPipeline(teamNum);
-    }
+    function undoAdventPipeline(teamNum) { adventData[currentAdventBoss][`team${teamNum}`].pipeline.pop(); renderAdventPipeline(teamNum); }
+    function clearAdventPipeline(teamNum) { adventData[currentAdventBoss][`team${teamNum}`].pipeline = []; renderAdventPipeline(teamNum); }
 
-    function clearAdventPipeline(teamNum) {
-        adventData[currentAdventBoss][`team${teamNum}`].pipeline = [];
-        renderAdventPipeline(teamNum);
-    }
-
-    function saveAdvent() {
+    async function saveAdvent(ev) {
         saveCurrentAdventBossState();
         const bd = adventData[currentAdventBoss];
         const nick = document.getElementById('myNick').value;
@@ -1193,20 +1217,30 @@
 
         if(!deckStr(bd.team1) && !deckStr(bd.team2)) return alert("최소 1팀 이상 영웅을 배치해주세요");
 
-        sendData({
-            action: "save_advent",
-            nickname: nick,
-            boss: currentAdventBoss,
-            team1Deck: deckStr(bd.team1),   team1Pet: bd.team1.pet,
-            team1Formation: bd.team1.formation, team1Memo: bd.team1.memo,
-            team1Pipeline: pipeStr(bd.team1),
-            team2Deck: deckStr(bd.team2),   team2Pet: bd.team2.pet,
-            team2Formation: bd.team2.formation, team2Memo: bd.team2.memo,
-            team2Pipeline: pipeStr(bd.team2)
-        }, () => {
+        const btn = ev.target; const orig = btn.innerText;
+        btn.disabled=true; btn.innerText="처리 중...";
+        try {
+            await sbFetch("POST", "advent", {
+                nickname:        nick,
+                boss:            currentAdventBoss,
+                team1_deck:      deckStr(bd.team1),
+                team1_pet:       bd.team1.pet,
+                team1_formation: bd.team1.formation,
+                team1_memo:      bd.team1.memo,
+                team1_pipeline:  pipeStr(bd.team1),
+                team2_deck:      deckStr(bd.team2),
+                team2_pet:       bd.team2.pet,
+                team2_formation: bd.team2.formation,
+                team2_memo:      bd.team2.memo,
+                team2_pipeline:  pipeStr(bd.team2),
+                cleared:         "false"
+            }, "?on_conflict=nickname,boss", {"Prefer":"resolution=merge-duplicates,return=minimal"});
+
             alert(`${currentAdventBoss} 저장 완료!`);
             renderAdventBossNav();
-        });
+            refreshSession();
+        } catch(e) { alert("저장 오류"); }
+        btn.disabled=false; btn.innerText=orig;
     }
 
     function loadAdventFromServer(nick) {
