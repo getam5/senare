@@ -73,10 +73,18 @@
         .acc-btn img { width:36px; height:36px; object-fit:contain; }
         .acc-btn span { font-size:9px; color:#c0c8d8; line-height:1.2; word-break:keep-all; }
 
+        /* 데스크탑에서만 표시 */
+        .hdr-brand { display: none; }
+
         /* --- 탭 네비게이션 --- */
         .tab-nav { display: flex; gap: 0; margin-bottom: 16px; border-radius: 8px; overflow: hidden; border: 1px solid #4d5a6e; }
         .tab-btn { flex: 1; padding: 11px 4px; background: #2a3040; color: #8090a8; border: none; font-size: 13px; font-weight: bold; cursor: pointer; transition: all 0.2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .tab-btn.active { background: #3a4758; color: #f0d060; border-bottom: 3px solid #f0d060; }
+
+        /* --- 진형+메모 한 줄 --- */
+        .info-row { display: flex; gap: 8px; }
+        .info-row select { flex: 1; min-width: 0; }
+        .info-row input  { flex: 2; min-width: 0; }
 
         /* --- 공성전 스킬 버튼 --- */
         .skill-btns { display: flex; gap: 2px; margin-top: 4px; width: 100%; }
@@ -162,6 +170,95 @@
         .sd-row:last-child { border-bottom:none; }
         .sd-label { font-size:10px; color:#6a8aaa; flex-shrink:0; white-space:nowrap; }
         .sd-val   { font-size:11px; color:#60c8f0; font-weight:bold; text-align:right; word-break:break-all; }
+
+        /* ========== 반응형 — 데스크탑 (1024px+) ========== */
+        @media (min-width: 1024px) {
+            body { padding-bottom: 0; text-align: left; }
+            .container { max-width: 1600px; padding: 0 32px 40px; }
+
+            /* 로그인 h2: 데스크탑에서 숨김 (헤더 브랜드로 대체) */
+            .container > h2 { display: none; }
+
+            /* 로그인 박스 중앙 */
+            #loginArea { max-width: 500px; margin: 80px auto 0; }
+
+            /* === 사이트 헤더 (sticky) === */
+            #siteHeader {
+                position: sticky; top: 0; z-index: 300;
+                background: #13172a; border-bottom: 2px solid #3d4a5c;
+                display: flex; align-items: center; gap: 0;
+                padding: 0 32px; margin: 0 -32px 28px; height: 58px;
+                box-shadow: 0 2px 12px rgba(0,0,0,0.4);
+            }
+            .hdr-brand {
+                display: block;
+                color: #f0d060; font-size: 18px; font-weight: bold;
+                text-shadow: 0 0 8px rgba(240,208,96,0.35);
+                white-space: nowrap; flex-shrink: 0;
+                padding-right: 24px; border-right: 1px solid #3d4a5c;
+            }
+            #siteHeader .tab-nav {
+                flex: 1; margin: 0; border: none; border-radius: 0;
+                background: transparent; height: 100%; overflow: visible;
+            }
+            #siteHeader .tab-btn {
+                height: 58px; line-height: 58px; padding: 0 24px;
+                font-size: 14px; border-bottom: 3px solid transparent;
+            }
+            #siteHeader .tab-btn.active {
+                background: rgba(240,208,96,0.08); border-bottom-color: #f0d060;
+            }
+            #siteHeader #userInfoBar {
+                flex-shrink: 0; margin: 0; border: none; border-radius: 0;
+                background: transparent; padding: 0 0 0 20px;
+                border-left: 1px solid #3d4a5c; align-self: stretch;
+                align-items: center;
+            }
+            #siteHeader .ui-name { font-size: 13px; }
+            #siteHeader .ui-btns button { padding: 5px 12px; font-size: 12px; }
+
+            /* === 길드전 2패널 === */
+            .guild-panel-row {
+                display: grid; grid-template-columns: 5fr 6fr; gap: 20px; align-items: start;
+            }
+            /* 관리자 공략등록 + 적군추가 나란히 */
+            .admin-panel-row {
+                display: grid; grid-template-columns: 1fr 1fr; gap: 20px; align-items: start;
+            }
+
+            /* === 공성전 덱 + 파이프라인 나란히 === */
+            .siege-panel-row {
+                display: grid; grid-template-columns: 3fr 2fr; gap: 16px; align-items: start;
+            }
+            .siege-panel-row .deck-container { margin: 0; }
+            .siege-panel-row .pipeline-area { margin: 0; }
+
+            /* === 강림원정 1팀 + 2팀 나란히 === */
+            .advent-teams-row {
+                display: grid; grid-template-columns: 1fr 1fr; gap: 24px; align-items: start;
+            }
+            .advent-teams-row hr.team-divider { display: none; }
+            .advent-team-col { display: flex; flex-direction: column; gap: 0; }
+
+            /* === 영웅 카드 (데스크탑 고정폭) === */
+            .hero-card { flex: 0 0 120px; max-width: 120px; }
+            .hero-slot { width: 60px; height: 60px; }
+            .gear-slot { min-height: 30px; font-size: 9px; }
+            .pet-wrapper { flex: 0 0 110px; max-width: 110px; }
+            .pet-slot { width: 76px; height: 76px; }
+            .deck-container { flex-wrap: wrap; gap: 8px; }
+
+            /* === 모달 (데스크탑 확장) === */
+            .modal-content { max-width: 720px; max-height: 85vh; }
+            .hero-grid { grid-template-columns: repeat(8, 1fr); gap: 12px; }
+            .gear-modal-grid { height: 440px; }
+
+            /* === 박스 패딩 확장 === */
+            .box { padding: 20px 22px; }
+
+            /* === 전적 바 === */
+            #battleStatsBar { font-size: 15px; }
+        }
     </style>
 </head>
 <body>
@@ -196,25 +293,31 @@
 
     <div id="mainArea" class="hidden">
 
-        <div id="userInfoBar">
-            <div>
-                <span id="userNickDisplay" class="ui-name"></span>
-                <span id="userRoleDisplay" style="margin-left:6px;"></span>
+        <header id="siteHeader">
+            <div class="hdr-brand">⚔️ 작전상황실</div>
+            <div class="tab-nav">
+                <button class="tab-btn active" onclick="switchTab('guild')">길드전</button>
+                <button class="tab-btn" onclick="switchTab('siege')">공성전</button>
+                <button class="tab-btn" onclick="switchTab('advent')">강림원정</button>
+                <button class="tab-btn hidden" id="adminTabBtn" onclick="switchTab('admin')">⚙️ 관리</button>
             </div>
-            <div class="ui-btns">
-                <button onclick="openPwChangeModal(false)" style="background:#3a4758;">🔑 비번변경</button>
-                <button onclick="logout()" style="background:#8a4040;">로그아웃</button>
+            <div id="userInfoBar">
+                <div>
+                    <span id="userNickDisplay" class="ui-name"></span>
+                    <span id="userRoleDisplay" style="margin-left:6px;"></span>
+                </div>
+                <div class="ui-btns">
+                    <button onclick="openPwChangeModal(false)" style="background:#3a4758;">🔑 비번변경</button>
+                    <button onclick="logout()" style="background:#8a4040;">로그아웃</button>
+                </div>
             </div>
-        </div>
+        </header>
 
-        <div class="tab-nav">
-            <button class="tab-btn active" onclick="switchTab('guild')">길드전</button>
-            <button class="tab-btn" onclick="switchTab('siege')">공성전</button>
-            <button class="tab-btn" onclick="switchTab('advent')">강림원정</button>
-            <button class="tab-btn hidden" id="adminTabBtn" onclick="switchTab('admin')">⚙️ 관리</button>
-        </div>
+        <div id="tabContent">
 
         <div id="guildWarTab">
+        <div class="guild-panel-row">
+        <div class="guild-left">
         <div class="box neon-green">
             <h3>1. 타겟 및 공략 확인</h3>
             <select id="enemySelect" onchange="selectEnemy()">
@@ -228,7 +331,9 @@
 
             <div id="strategyBox" style="margin-top:10px;"></div>
         </div>
+        </div><!-- /guild-left -->
 
+        <div class="guild-right">
         <div class="box neon-purple">
             <h3>2. 내 공격팀 구성</h3>
             <div id="activeStrategyNote"></div>
@@ -244,15 +349,23 @@
 
         <div class="box neon-red">
             <h3>3. 결과 기록</h3>
+            <div id="battleStatsBar" style="display:none; justify-content:center; gap:16px; margin-bottom:10px; padding:8px 12px; background:#1e2830; border-radius:8px; font-size:13px;">
+                <span>🏆 승리 <strong id="statWin" style="color:#6bbd7a;">0</strong>회</span>
+                <span>💀 패배 <strong id="statLose" style="color:#d47474;">0</strong>회</span>
+                <span>📊 승률 <strong id="statRate" style="color:#f0d060;">-</strong></span>
+            </div>
             <div style="display:flex; gap:10px;">
                 <button onclick="record(event,'WIN')" style="background:#3a7a50;">⭐⭐⭐ 승리</button>
                 <button onclick="record(event,'LOSE')" style="background:#8a4040;">❌ 패배</button>
             </div>
         </div>
+        </div><!-- /guild-right -->
+        </div><!-- /guild-panel-row -->
 
         <button id="toggleAdminBtn" onclick="toggleAdmin()" class="hidden" style="background:#3a4758; margin-top:20px;">🛠️ 공략/적군 관리</button>
 
         <div id="adminArea" class="hidden" style="margin-top:20px;">
+        <div class="admin-panel-row">
             <div class="box neon-blue">
                 <h3>📜 신규 공략 등록</h3>
                 <select id="targetEnemySelect"></select>
@@ -274,6 +387,7 @@
                 <input type="hidden" id="newEnemyDeckResult">
                 <button onclick="addNewEnemy(event)">적군 등록 완료</button>
             </div>
+        </div>
         </div>
         </div><!-- /guildWarTab -->
 
@@ -297,6 +411,7 @@
                 </select>
                 <input type="text" id="siegeKeyItems" placeholder="메모">
             </div>
+            <div class="siege-panel-row">
             <div class="deck-container" id="siegeDeckContainer"></div>
 
             <div class="pipeline-area">
@@ -313,6 +428,7 @@
                     <span id="pipelineText" style="font-size:11px; color:#6bbd7a;"></span>
                 </div>
             </div>
+            </div><!-- /siege-panel-row -->
 
             <button onclick="saveSiege(event)" style="background:#3a7a50; margin-top:10px;">저장</button>
         </div>
@@ -324,6 +440,8 @@
             <div class="box neon-purple" id="adventBossSection">
                 <h3 id="adventBossTitle" style="margin:0 0 12px 0;">보스를 선택하세요</h3>
 
+                <div class="advent-teams-row">
+                <div class="advent-team-col">
                 <div class="team-label team1-label">⚔️ 1팀</div>
                 <div style="display:flex; gap:6px; margin:6px 0;">
                     <select id="adventFormation_1" style="flex:1;">
@@ -344,9 +462,11 @@
                         <span id="adventPipelineText_1" style="font-size:11px; color:#6bbd7a;"></span>
                     </div>
                 </div>
+                </div><!-- /advent-team-col 1 -->
 
                 <hr class="team-divider">
 
+                <div class="advent-team-col">
                 <div class="team-label team2-label">⚔️ 2팀</div>
                 <div style="display:flex; gap:6px; margin:6px 0;">
                     <select id="adventFormation_2" style="flex:1;">
@@ -367,6 +487,8 @@
                         <span id="adventPipelineText_2" style="font-size:11px; color:#6bbd7a;"></span>
                     </div>
                 </div>
+                </div><!-- /advent-team-col 2 -->
+                </div><!-- /advent-teams-row -->
 
                 <button onclick="saveAdvent(event)" style="background:#3a7a50; margin-top:10px;">💾 저장</button>
             </div>
@@ -383,8 +505,10 @@
             </div>
         </div><!-- /adminMgmtTab -->
 
-    </div>
-</div>
+        </div><!-- /tabContent -->
+
+    </div><!-- /mainArea -->
+</div><!-- /container -->
 
 <div id="selectorModal" class="modal">
     <div class="modal-content">
@@ -686,12 +810,13 @@
 
         try {
             const nickParam = encodeURIComponent(nick);
-            const [members, enemies, strategies, siege, advent] = await Promise.all([
-                sbFetch("GET", "members",    null, "?select=*", {}, signal),
-                sbFetch("GET", "enemies",    null, "?select=*", {}, signal),
-                sbFetch("GET", "strategies", null, "?select=*", {}, signal),
-                sbFetch("GET", "siege",      null, `?select=*&nickname=eq.${nickParam}`, {}, signal),
-                sbFetch("GET", "advent",     null, `?select=*&nickname=eq.${nickParam}`, {}, signal)
+            const [members, enemies, strategies, siege, advent, battleRecords] = await Promise.all([
+                sbFetch("GET", "members",        null, "?select=*", {}, signal),
+                sbFetch("GET", "enemies",        null, "?select=*", {}, signal),
+                sbFetch("GET", "strategies",     null, "?select=*", {}, signal),
+                sbFetch("GET", "siege",          null, `?select=*&nickname=eq.${nickParam}`, {}, signal),
+                sbFetch("GET", "advent",         null, `?select=*&nickname=eq.${nickParam}`, {}, signal),
+                sbFetch("GET", "battle_records", null, `?select=result&nickname=eq.${nickParam}`, {}, signal)
             ]);
 
             clearTimeout(_loginTimeoutId);
@@ -714,11 +839,12 @@
             }));
 
             globalData = {
-                members:    members    || [],
-                enemies:    enemies    || [],
-                strategies: strategies || [],
-                siege:      siege      || [],
-                advent:     adventMapped
+                members:        members        || [],
+                enemies:        enemies        || [],
+                strategies:     strategies     || [],
+                siege:          siege          || [],
+                advent:         adventMapped,
+                battleRecords:  battleRecords  || []
             };
 
             let valid = false;
@@ -785,6 +911,7 @@
                 renderDropdowns();
                 loadSiegeFromServer(nick);
                 loadAdventFromServer(nick);
+                updateBattleStats();
 
                 // 첫 로그인 비밀번호 변경
                 if(currentUserMustChangePw) openPwChangeModal(true);
@@ -1131,6 +1258,19 @@
         btn.disabled=false; btn.innerText=orig;
     }
 
+    function updateBattleStats() {
+        const records = globalData.battleRecords || [];
+        const wins  = records.filter(x => x.result === 'WIN').length;
+        const loses = records.filter(x => x.result === 'LOSE').length;
+        const total = wins + loses;
+        const bar = document.getElementById('battleStatsBar');
+        if(total === 0) { bar.style.display = 'none'; return; }
+        bar.style.display = 'flex';
+        document.getElementById('statWin').innerText  = wins;
+        document.getElementById('statLose').innerText = loses;
+        document.getElementById('statRate').innerText = `${Math.round(wins / total * 100)}%`;
+    }
+
     async function record(ev, r) {
         const t=document.getElementById('enemySelect').value, d=document.getElementById('myBattleDeckResult').value;
         if(!t||!d) return alert("필수 정보 누락");
@@ -1148,6 +1288,8 @@
                 result:     r
             }, "", {"Prefer":"return=minimal"});
 
+            globalData.battleRecords.push({ result: r });
+            updateBattleStats();
             alert("기록 완료!");
             refreshSession();
         } catch(e) { alert("전송 오류"); }
