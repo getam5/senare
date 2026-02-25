@@ -816,7 +816,7 @@
                 sbFetch("GET", "strategies",     null, "?select=*", {}, signal),
                 sbFetch("GET", "siege",          null, `?select=*&nickname=eq.${nickParam}`, {}, signal),
                 sbFetch("GET", "advent",         null, `?select=*&nickname=eq.${nickParam}`, {}, signal),
-                sbFetch("GET", "battle_records", null, `?select=result&nickname=eq.${nickParam}`, {}, signal)
+                sbFetch("GET", "battle_records", null, `?select=result,enemy_name,enemy_deck,my_deck&nickname=eq.${nickParam}`, {}, signal)
             ]);
 
             clearTimeout(_loginTimeoutId);
@@ -902,10 +902,11 @@
                         ? '<span class="badge-admin">관리자</span>'
                         : '<span class="badge-user">사용자</span>';
 
-                // 관리자 UI 표시
+                // 공략/적군 관리 버튼: 모든 사용자
+                document.getElementById('toggleAdminBtn').classList.remove('hidden');
+                // 관리자 전용 탭
                 if(currentUserRole === 'admin') {
                     document.getElementById('adminTabBtn').classList.remove('hidden');
-                    document.getElementById('toggleAdminBtn').classList.remove('hidden');
                 }
 
                 renderDropdowns();
@@ -1002,6 +1003,7 @@
         const res = state.filter(x=>x.name).map(x => serializeHero(x)).join(", ");
         document.getElementById(mode==='myBattle'?'myBattleDeckResult':'newAttackDeckResult').value = res;
         document.getElementById(mode==='myBattle'?'myBattlePetResult':'newAttackPetResult').value = pState;
+        if(mode === 'myBattle') updateBattleStats();
     }
 
     // --- 각종 모달 ---
@@ -1149,6 +1151,7 @@
             v.innerHTML="<span style='color:#5f6d82;line-height:60px'>상대 정보 대기 중</span>";
             document.getElementById('strategyBox').innerHTML="";
             resetMyDeck();
+            updateBattleStats();
             return;
         }
         if(!e) return v.innerHTML="<span style='color:#5f6d82;line-height:60px'>정보 없음</span>";
@@ -1180,6 +1183,7 @@
             });
             sb.innerHTML=sh;
         } else sb.innerHTML="<p style='color:#5f6d82'>공략 없음</p>";
+        updateBattleStats();
     }
 
     function applyStrategy(s) {
@@ -1258,12 +1262,25 @@
         btn.disabled=false; btn.innerText=orig;
     }
 
+    // 덱 문자열에서 영웅 이름만 추출해 정규화된 키 반환 (장비/능력치 무시)
+    function deckKey(deckStr) {
+        if(!deckStr) return '';
+        return deckStr.split(',').map(p => p.split('(')[0].replace(/\[.*\]/, '').trim()).join(',');
+    }
+
     function updateBattleStats() {
-        const records = globalData.battleRecords || [];
+        const enemy = document.getElementById('enemySelect').value;
+        const myDeck = document.getElementById('myBattleDeckResult').value;
+        const bar = document.getElementById('battleStatsBar');
+        if(!enemy || !myDeck) { bar.style.display = 'none'; return; }
+        const myKey = deckKey(myDeck);
+        const edKey = deckKey(document.getElementById('currentEnemyDeck').value);
+        const records = (globalData.battleRecords || []).filter(x =>
+            deckKey(x.my_deck) === myKey && deckKey(x.enemy_deck) === edKey
+        );
         const wins  = records.filter(x => x.result === 'WIN').length;
         const loses = records.filter(x => x.result === 'LOSE').length;
         const total = wins + loses;
-        const bar = document.getElementById('battleStatsBar');
         if(total === 0) { bar.style.display = 'none'; return; }
         bar.style.display = 'flex';
         document.getElementById('statWin').innerText  = wins;
@@ -1273,6 +1290,7 @@
 
     async function record(ev, r) {
         const t=document.getElementById('enemySelect').value, d=document.getElementById('myBattleDeckResult').value;
+        const ed=document.getElementById('currentEnemyDeck').value;
         if(!t||!d) return alert("필수 정보 누락");
 
         const btn = ev.target; const orig = btn.innerText;
@@ -1281,14 +1299,14 @@
             await sbFetch("POST", "battle_records", {
                 nickname:   document.getElementById('myNick').value,
                 enemy_name: t,
-                enemy_deck: document.getElementById('currentEnemyDeck').value,
+                enemy_deck: ed,
                 my_deck:    d,
                 pet:        document.getElementById('myBattlePetResult').value,
                 formation:  document.getElementById('myFormation').value,
                 result:     r
             }, "", {"Prefer":"return=minimal"});
 
-            globalData.battleRecords.push({ result: r });
+            globalData.battleRecords.push({ result: r, enemy_name: t, enemy_deck: ed, my_deck: d });
             updateBattleStats();
             alert("기록 완료!");
             refreshSession();
