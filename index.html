@@ -315,186 +315,166 @@
 
         <div id="tabContent">
 
-        <div id="guildWarTab">
-        <div class="guild-panel-row">
-        <div class="guild-left">
-        <div class="box neon-green">
-            <h3>1. 타겟 및 공략 확인</h3>
-            <select id="enemySelect" onchange="selectEnemy()">
-                <option value="">-- 상대를 선택하세요 --</option>
-            </select>
+            <div id="guildWarTab">
+                <div class="guild-panel-row">
+                    <div class="guild-left">
+                        <div class="box neon-green">
+                            <h3>1. 타겟 및 공략 확인</h3>
+                            <select id="enemySelect" onchange="selectEnemy()">
+                                <option value="">-- 상대를 선택하세요 --</option>
+                            </select>
 
-            <div id="enemyDeckVisual" class="deck-container" style="justify-content: center; min-height: 56px;">
-                <span style="color:#5f6d82; line-height:60px;">상대 정보 대기 중</span>
+                            <div id="enemyDeckVisual" class="deck-container" style="justify-content: center; min-height: 56px;">
+                                <span style="color:#5f6d82; line-height:60px;">상대 정보 대기 중</span>
+                            </div>
+                            <input type="hidden" id="currentEnemyDeck">
+
+                            <div id="strategyBox" style="margin-top:10px;"></div>
+                        </div>
+                    </div><div class="guild-right">
+                    <div class="box neon-purple">
+                        <h3>2. 내 공격팀 구성</h3>
+                        <div id="activeStrategyNote"></div>
+                        <div class="info-row">
+                            <select id="myFormation">
+                                <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                            </select>
+                            <input type="text" id="myKeyItems" placeholder="메모 (펫 스킬 등)">
+                        </div>
+                        <div class="deck-container" id="myBattleDeckContainer"></div>
+                        <input type="hidden" id="myBattleDeckResult"><input type="hidden" id="myBattlePetResult">
+                    </div>
+
+                    <div class="box neon-red">
+                        <h3>3. 결과 기록</h3>
+                        <div id="battleStatsBar" style="display:none; justify-content:center; gap:16px; margin-bottom:10px; padding:8px 12px; background:#1e2830; border-radius:8px; font-size:13px;">
+                            <span>🏆 승리 <strong id="statWin" style="color:#6bbd7a;">0</strong>회</span>
+                            <span>💀 패배 <strong id="statLose" style="color:#d47474;">0</strong>회</span>
+                            <span>📊 승률 <strong id="statRate" style="color:#f0d060;">-</strong></span>
+                        </div>
+                        <div style="display:flex; gap:10px;">
+                            <button onclick="record(event,'WIN')" style="background:#3a7a50;">⭐⭐⭐ 승리</button>
+                            <button onclick="record(event,'LOSE')" style="background:#8a4040;">❌ 패배</button>
+                        </div>
+                    </div>
+                </div></div><button id="toggleAdminBtn" onclick="toggleAdmin()" class="hidden" style="background:#3a4758; margin-top:20px;">🛠️ 공략/적군 관리</button>
+
+                <div id="adminArea" class="hidden" style="margin-top:20px;">
+                    <div class="admin-panel-row">
+                        <div class="box neon-blue">
+                            <h3>📜 신규 공략 등록</h3>
+                            <select id="targetEnemySelect"></select>
+                            <div class="info-row">
+                                <select id="newFormation"><option value="기본">기본</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option></select>
+                                <input type="text" id="newKeyItems" placeholder="특이사항">
+                            </div>
+                            <div class="deck-container" id="newAttackDeckContainer"></div>
+                            <input type="hidden" id="newAttackDeckResult"><input type="hidden" id="newAttackPetResult">
+                            <textarea id="newStrategyNote" placeholder="상세 공략 작성" style="height:60px;"></textarea>
+                            <button onclick="addStrategy(event)">공략 등록 완료</button>
+                        </div>
+                        <div class="box neon-blue">
+                            <h3>👾 적군 추가</h3>
+                            <input type="text" id="newEnemyName" placeholder="적 닉네임">
+                            <div class="deck-container" id="enemyDeckContainer" style="justify-content:center;"></div>
+                            <input type="hidden" id="newEnemyDeckResult">
+                            <button onclick="addNewEnemy(event)">적군 등록 완료</button>
+                        </div>
+                    </div>
+                </div>
+            </div><div id="siegeWarTab" class="hidden">
+
+            <div class="day-nav">
+                <button class="day-btn" onclick="switchSiegeDay('mon')">월</button>
+                <button class="day-btn" onclick="switchSiegeDay('tue')">화</button>
+                <button class="day-btn" onclick="switchSiegeDay('wed')">수</button>
+                <button class="day-btn" onclick="switchSiegeDay('thu')">목</button>
+                <button class="day-btn" onclick="switchSiegeDay('fri')">금</button>
+                <button class="day-btn sat" onclick="switchSiegeDay('sat')">토</button>
+                <button class="day-btn sun" onclick="switchSiegeDay('sun')">일</button>
             </div>
-            <input type="hidden" id="currentEnemyDeck">
 
-            <div id="strategyBox" style="margin-top:10px;"></div>
-        </div>
-        </div><!-- /guild-left -->
-
-        <div class="guild-right">
-        <div class="box neon-purple">
-            <h3>2. 내 공격팀 구성</h3>
-            <div id="activeStrategyNote"></div>
-            <div class="info-row">
-                <select id="myFormation">
-                    <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
-                </select>
-                <input type="text" id="myKeyItems" placeholder="메모 (펫 스킬 등)">
-            </div>
-            <div class="deck-container" id="myBattleDeckContainer"></div>
-            <input type="hidden" id="myBattleDeckResult"><input type="hidden" id="myBattlePetResult">
-        </div>
-
-        <div class="box neon-red">
-            <h3>3. 결과 기록</h3>
-            <div id="battleStatsBar" style="display:none; justify-content:center; gap:16px; margin-bottom:10px; padding:8px 12px; background:#1e2830; border-radius:8px; font-size:13px;">
-                <span>🏆 승리 <strong id="statWin" style="color:#6bbd7a;">0</strong>회</span>
-                <span>💀 패배 <strong id="statLose" style="color:#d47474;">0</strong>회</span>
-                <span>📊 승률 <strong id="statRate" style="color:#f0d060;">-</strong></span>
-            </div>
-            <div style="display:flex; gap:10px;">
-                <button onclick="record(event,'WIN')" style="background:#3a7a50;">⭐⭐⭐ 승리</button>
-                <button onclick="record(event,'LOSE')" style="background:#8a4040;">❌ 패배</button>
-            </div>
-        </div>
-        </div><!-- /guild-right -->
-        </div><!-- /guild-panel-row -->
-
-        <button id="toggleAdminBtn" onclick="toggleAdmin()" class="hidden" style="background:#3a4758; margin-top:20px;">🛠️ 공략/적군 관리</button>
-
-        <div id="adminArea" class="hidden" style="margin-top:20px;">
-        <div class="admin-panel-row">
-            <div class="box neon-blue">
-                <h3>📜 신규 공략 등록</h3>
-                <select id="targetEnemySelect"></select>
+            <div class="box neon-purple">
+                <h3 id="siegeDayTitle">공성전 팀 구성</h3>
                 <div class="info-row">
-                    <select id="newFormation"><option value="기본">기본</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option></select>
-                    <input type="text" id="newKeyItems" placeholder="특이사항">
+                    <select id="siegeFormation">
+                        <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                    </select>
+                    <input type="text" id="siegeKeyItems" placeholder="메모">
                 </div>
-                <div class="deck-container" id="newAttackDeckContainer"></div>
-                <input type="hidden" id="newAttackDeckResult"><input type="hidden" id="newAttackPetResult">
-                <textarea id="newStrategyNote" placeholder="상세 공략 작성" style="height:60px;"></textarea>
-                <button onclick="addStrategy(event)">공략 등록 완료</button>
+                <div class="siege-panel-row">
+                    <div class="deck-container" id="siegeDeckContainer"></div>
+
+                    <div class="pipeline-area">
+                        <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
+                        <div class="pipeline-display" id="pipelineDisplay">
+                            <span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span>
+                        </div>
+                        <div class="pipeline-controls">
+                            <button onclick="undoPipeline()" style="background:#4a5568;">되돌리기</button>
+                            <button onclick="clearPipeline()" style="background:#8a4040;">초기화</button>
+                        </div>
+                        <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
+                            <span style="font-size:11px; color:#8090a8;">결과: </span>
+                            <span id="pipelineText" style="font-size:11px; color:#6bbd7a;"></span>
+                        </div>
+                    </div>
+                </div><button onclick="saveSiege(event)" style="background:#3a7a50; margin-top:10px;">저장</button>
             </div>
-            <div class="box neon-blue">
-                <h3>👾 적군 추가</h3>
-                <input type="text" id="newEnemyName" placeholder="적 닉네임">
-                <div class="deck-container" onclick="openSelector('enemy', 'HERO')" style="justify-content:center; cursor:pointer;">
-                    <div id="preview_enemy_1" class="hero-slot">+</div><div id="preview_enemy_2" class="hero-slot">+</div><div id="preview_enemy_3" class="hero-slot">+</div>
-                </div>
-                <input type="hidden" id="newEnemyDeckResult">
-                <button onclick="addNewEnemy(event)">적군 등록 완료</button>
-            </div>
-        </div>
-        </div>
-        </div><!-- /guildWarTab -->
-
-        <div id="siegeWarTab" class="hidden">
-
-        <div class="day-nav">
-            <button class="day-btn" onclick="switchSiegeDay('mon')">월</button>
-            <button class="day-btn" onclick="switchSiegeDay('tue')">화</button>
-            <button class="day-btn" onclick="switchSiegeDay('wed')">수</button>
-            <button class="day-btn" onclick="switchSiegeDay('thu')">목</button>
-            <button class="day-btn" onclick="switchSiegeDay('fri')">금</button>
-            <button class="day-btn sat" onclick="switchSiegeDay('sat')">토</button>
-            <button class="day-btn sun" onclick="switchSiegeDay('sun')">일</button>
-        </div>
-
-        <div class="box neon-purple">
-            <h3 id="siegeDayTitle">공성전 팀 구성</h3>
-            <div class="info-row">
-                <select id="siegeFormation">
-                    <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
-                </select>
-                <input type="text" id="siegeKeyItems" placeholder="메모">
-            </div>
-            <div class="siege-panel-row">
-            <div class="deck-container" id="siegeDeckContainer"></div>
-
-            <div class="pipeline-area">
-                <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
-                <div class="pipeline-display" id="pipelineDisplay">
-                    <span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span>
-                </div>
-                <div class="pipeline-controls">
-                    <button onclick="undoPipeline()" style="background:#4a5568;">되돌리기</button>
-                    <button onclick="clearPipeline()" style="background:#8a4040;">초기화</button>
-                </div>
-                <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
-                    <span style="font-size:11px; color:#8090a8;">결과: </span>
-                    <span id="pipelineText" style="font-size:11px; color:#6bbd7a;"></span>
-                </div>
-            </div>
-            </div><!-- /siege-panel-row -->
-
-            <button onclick="saveSiege(event)" style="background:#3a7a50; margin-top:10px;">저장</button>
-        </div>
-        </div><!-- /siegeWarTab -->
-
-        <div id="adventTab" class="hidden">
+        </div><div id="adventTab" class="hidden">
             <div class="advent-boss-nav" id="adventBossNav"></div>
 
             <div class="box neon-purple" id="adventBossSection">
                 <h3 id="adventBossTitle" style="margin:0 0 12px 0;">보스를 선택하세요</h3>
 
                 <div class="advent-teams-row">
-                <div class="advent-team-col">
-                <div class="team-label team1-label">⚔️ 1팀</div>
-                <div style="display:flex; gap:6px; margin:6px 0;">
-                    <select id="adventFormation_1" style="flex:1;">
-                        <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
-                    </select>
-                    <input type="text" id="adventKeyItems_1" placeholder="메모" style="flex:2;">
-                </div>
-                <div class="deck-container" id="adventDeckContainer_1"></div>
-                <div class="pipeline-area">
-                    <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
-                    <div class="pipeline-display" id="adventPipelineDisplay_1"><span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span></div>
-                    <div class="pipeline-controls">
-                        <button onclick="undoAdventPipeline(1)" style="background:#4a5568;">되돌리기</button>
-                        <button onclick="clearAdventPipeline(1)" style="background:#8a4040;">초기화</button>
-                    </div>
-                    <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
-                        <span style="font-size:11px; color:#8090a8;">결과: </span>
-                        <span id="adventPipelineText_1" style="font-size:11px; color:#6bbd7a;"></span>
-                    </div>
-                </div>
-                </div><!-- /advent-team-col 1 -->
+                    <div class="advent-team-col">
+                        <div class="team-label team1-label">⚔️ 1팀</div>
+                        <div style="display:flex; gap:6px; margin:6px 0;">
+                            <select id="adventFormation_1" style="flex:1;">
+                                <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                            </select>
+                            <input type="text" id="adventKeyItems_1" placeholder="메모" style="flex:2;">
+                        </div>
+                        <div class="deck-container" id="adventDeckContainer_1"></div>
+                        <div class="pipeline-area">
+                            <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
+                            <div class="pipeline-display" id="adventPipelineDisplay_1"><span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span></div>
+                            <div class="pipeline-controls">
+                                <button onclick="undoAdventPipeline(1)" style="background:#4a5568;">되돌리기</button>
+                                <button onclick="clearAdventPipeline(1)" style="background:#8a4040;">초기화</button>
+                            </div>
+                            <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
+                                <span style="font-size:11px; color:#8090a8;">결과: </span>
+                                <span id="adventPipelineText_1" style="font-size:11px; color:#6bbd7a;"></span>
+                            </div>
+                        </div>
+                    </div><hr class="team-divider">
 
-                <hr class="team-divider">
-
-                <div class="advent-team-col">
-                <div class="team-label team2-label">⚔️ 2팀</div>
-                <div style="display:flex; gap:6px; margin:6px 0;">
-                    <select id="adventFormation_2" style="flex:1;">
-                        <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
-                    </select>
-                    <input type="text" id="adventKeyItems_2" placeholder="메모" style="flex:2;">
-                </div>
-                <div class="deck-container" id="adventDeckContainer_2"></div>
-                <div class="pipeline-area">
-                    <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
-                    <div class="pipeline-display" id="adventPipelineDisplay_2"><span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span></div>
-                    <div class="pipeline-controls">
-                        <button onclick="undoAdventPipeline(2)" style="background:#4a5568;">되돌리기</button>
-                        <button onclick="clearAdventPipeline(2)" style="background:#8a4040;">초기화</button>
-                    </div>
-                    <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
-                        <span style="font-size:11px; color:#8090a8;">결과: </span>
-                        <span id="adventPipelineText_2" style="font-size:11px; color:#6bbd7a;"></span>
-                    </div>
-                </div>
-                </div><!-- /advent-team-col 2 -->
-                </div><!-- /advent-teams-row -->
-
-                <button onclick="saveAdvent(event)" style="background:#3a7a50; margin-top:10px;">💾 저장</button>
+                    <div class="advent-team-col">
+                        <div class="team-label team2-label">⚔️ 2팀</div>
+                        <div style="display:flex; gap:6px; margin:6px 0;">
+                            <select id="adventFormation_2" style="flex:1;">
+                                <option value="기본">기본 진형</option><option value="밸런스">밸런스</option><option value="공격">공격</option><option value="보호">보호</option>
+                            </select>
+                            <input type="text" id="adventKeyItems_2" placeholder="메모" style="flex:2;">
+                        </div>
+                        <div class="deck-container" id="adventDeckContainer_2"></div>
+                        <div class="pipeline-area">
+                            <h4 style="color:#a0a8b8; margin:0 0 8px 0;">스킬 파이프라인</h4>
+                            <div class="pipeline-display" id="adventPipelineDisplay_2"><span style="color:#5f6d82;">스킬 버튼을 클릭하여 순서를 지정하세요</span></div>
+                            <div class="pipeline-controls">
+                                <button onclick="undoAdventPipeline(2)" style="background:#4a5568;">되돌리기</button>
+                                <button onclick="clearAdventPipeline(2)" style="background:#8a4040;">초기화</button>
+                            </div>
+                            <div style="margin-top:8px; padding:6px; background:#2a3444; border-radius:4px;">
+                                <span style="font-size:11px; color:#8090a8;">결과: </span>
+                                <span id="adventPipelineText_2" style="font-size:11px; color:#6bbd7a;"></span>
+                            </div>
+                        </div>
+                    </div></div><button onclick="saveAdvent(event)" style="background:#3a7a50; margin-top:10px;">💾 저장</button>
             </div>
-        </div><!-- /adventTab -->
-
-        <div id="adminMgmtTab" class="hidden">
+        </div><div id="adminMgmtTab" class="hidden">
             <div class="box neon-blue">
                 <h3>📋 가입 신청 목록</h3>
                 <div id="pendingMembersList"><p style="color:#5f6d82;">로딩 중...</p></div>
@@ -503,14 +483,7 @@
                 <h3>👥 멤버 관리</h3>
                 <div id="allMembersList"><p style="color:#5f6d82;">로딩 중...</p></div>
             </div>
-        </div><!-- /adminMgmtTab -->
-
-        </div><!-- /tabContent -->
-
-    </div><!-- /mainArea -->
-</div><!-- /container -->
-
-<div id="selectorModal" class="modal">
+        </div></div></div></div><div id="selectorModal" class="modal">
     <div class="modal-content">
         <h3 id="modalTitle">선택</h3>
         <input type="text" id="searchBox" onkeyup="filterItems()" placeholder="검색...">
@@ -570,7 +543,7 @@
 <script>
     // ⚙️ Supabase 설정
     const SUPABASE_URL = "https://zobzzgvbqmkistvdlexi.supabase.co";
-    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvYnp6Z3ZicW1raXN0dmRsZXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzAzODMsImV4cCI6MjA4NzQ0NjM4M30.uVjldZvtNsiA-_OAMf4y_Q_S0fHCnDHQinqQ4R10zS0"; // ⚠️ 대시보드 > Settings > API > anon public key 입력
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpvYnp6Z3ZicW1raXN0dmRsZXhpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzE4NzAzODMsImV4cCI6MjA4NzQ0NjM4M30.uVjldZvtNsiA-_OAMf4y_Q_S0fHCnDHQinqQ4R10zS0";
 
     // --- 설정값 ---
     const SESSION_TIMEOUT = 60 * 60 * 1000;
@@ -605,7 +578,6 @@
 
     // --- 덱 직렬화/파싱 헬퍼 ---
     function parseHeroToken(p) {
-        // "[stats...]" 파싱
         let stats = {}, token = p;
         const bs = p.lastIndexOf('['), be = p.lastIndexOf(']');
         if(bs > -1 && be > bs) {
@@ -615,7 +587,6 @@
             });
             token = p.substring(0, bs);
         }
-        // "Name(w1/a1/w2/a2/acc)" 파싱
         const fp = token.indexOf('('), lp = token.lastIndexOf(')');
         const hero = emptyHero();
         hero.stats = stats;
@@ -672,10 +643,12 @@
         return grade + s.replace("의 반지", "").replace(" 반지", "");
     }
 
-    // 변수
+    // 변수 교체 (적군도 다른 덱과 동일하게 관리)
+    let myPetState = "", adminPetState = "";
     let myDeckState = Array(3).fill().map(emptyHero);
     let adminDeckState = Array(3).fill().map(emptyHero);
-    let myPetState = "", adminPetState = "", tempEnemyHeroes = [];
+    let enemyDeckState = Array(3).fill().map(emptyHero);
+
     let globalData = { members: [], enemies: [], strategies: [] };
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0, currentModalType = 'HERO';
     let currentStatsMode = "", currentStatsIdx = 0;
@@ -717,6 +690,7 @@
 
         renderInteractiveDeck('myBattle');
         renderInteractiveDeck('attack');
+        renderEnemyDeck(); // 적군 렌더링 호출
 
         const jsDay = new Date().getDay();
         const dayMap = [6,0,1,2,3,4,5];
@@ -821,7 +795,6 @@
 
             clearTimeout(_loginTimeoutId);
 
-            // advent 컬럼명 변환 (snake_case → camelCase)
             const adventMapped = (advent||[]).map(row => ({
                 nickname:       row.nickname,
                 boss:           row.boss,
@@ -871,14 +844,13 @@
                     }
                 }
             } else {
-                // 자동 로그인: 상태 확인
                 memberRecord = globalData.members.find(m => String(m.nick) === nick);
                 if(memberRecord && memberRecord.status !== 'active') {
                     clearTimeout(_loginTimeoutId);
                     logout("계정이 비활성화되었습니다. 관리자에게 문의하세요.");
                     return;
                 }
-                valid = true; // 자동 로그인은 localStorage 신뢰
+                valid = true;
             }
 
             document.getElementById('loadingArea').classList.add('hidden');
@@ -886,7 +858,6 @@
             document.getElementById('loadingMsg').innerText = "서버 연결 중...";
 
             if(valid) {
-                // 역할 설정
                 currentUserRole = memberRecord ? (memberRecord.role || 'user') : 'user';
                 currentUserMustChangePw = memberRecord ? (memberRecord.must_change_pw || false) : false;
 
@@ -895,16 +866,13 @@
                 document.getElementById('loginArea').classList.add('hidden');
                 document.getElementById('mainArea').classList.remove('hidden');
 
-                // 사용자 정보 표시
                 document.getElementById('userNickDisplay').innerText = nick;
                 document.getElementById('userRoleDisplay').innerHTML =
                     currentUserRole === 'admin'
                         ? '<span class="badge-admin">관리자</span>'
                         : '<span class="badge-user">사용자</span>';
 
-                // 공략/적군 관리 버튼: 모든 사용자
                 document.getElementById('toggleAdminBtn').classList.remove('hidden');
-                // 관리자 전용 탭
                 if(currentUserRole === 'admin') {
                     document.getElementById('adminTabBtn').classList.remove('hidden');
                 }
@@ -914,7 +882,6 @@
                 loadAdventFromServer(nick);
                 updateBattleStats();
 
-                // 첫 로그인 비밀번호 변경
                 if(currentUserMustChangePw) openPwChangeModal(true);
             } else {
                 document.getElementById('loginArea').classList.remove('hidden');
@@ -965,7 +932,90 @@
         return getAbbr(fullText);
     }
 
-    // --- 덱 렌더링 ---
+    // --- 덱 관련 공통 함수 통합 ---
+    function getDeckState(mode) {
+        if(mode==='myBattle') return myDeckState;
+        if(mode==='siege') return siegeDeckState;
+        if(mode==='advent1') return adventData[currentAdventBoss].team1.deck;
+        if(mode==='advent2') return adventData[currentAdventBoss].team2.deck;
+        if(mode==='enemy') return enemyDeckState;
+        return adminDeckState;
+    }
+
+    function renderDeckByMode(mode) {
+        if(mode==='siege') renderSiegeDeck();
+        else if(mode==='advent1') renderAdventDeck(1);
+        else if(mode==='advent2') renderAdventDeck(2);
+        else if(mode==='enemy') renderEnemyDeck();
+        else renderInteractiveDeck(mode);
+    }
+
+    function openSelector(mode, type, idx=0) {
+        currentModalType = type;
+        document.getElementById('modalTitle').innerText = type==='HERO'?"영웅 선택":"펫 선택";
+        currentMode=mode; tempHeroIndex=idx;
+        openCommonModal(type);
+    }
+
+    function openCommonModal(type) {
+        document.getElementById('searchBox').value=""; renderItemGrid(type);
+        document.getElementById('selectorModal').style.display='flex';
+    }
+
+    function getUsedHeroes(mode) {
+        const state = getDeckState(mode);
+        return state.filter((h, i) => h.name && i !== tempHeroIndex).map(h => h.name);
+    }
+
+    function renderItemGrid(type, filter="") {
+        const g = document.getElementById('itemGrid'); g.innerHTML="";
+
+        // 해제 버튼 (검색어 없을 때만)
+        if(!filter) {
+            const r = document.createElement('div'); r.className='hero-item';
+            r.innerHTML=`<div class="hero-circle" style="border-color:#d47474;background:#3a2a2a;"><span style="font-size:22px;color:#d47474;">✕</span></div><div class="hero-name" style="color:#d47474;">해제</div>`;
+            if(type === 'HERO') {
+                r.onclick=()=>{ getDeckState(currentMode)[tempHeroIndex]=emptyHero(); renderDeckByMode(currentMode); closeSelectorModal(); };
+            } else {
+                r.onclick=()=>{ confirmSel(type, ''); };
+            }
+            g.appendChild(r);
+        }
+
+        const src = type==='HERO'?DATA_HEROES:DATA_PETS;
+        const usedHeroes = type==='HERO' ? getUsedHeroes(currentMode) : [];
+        src.filter(x=>x.includes(filter)).forEach(item => {
+            const isUsed = usedHeroes.includes(item);
+            const d = document.createElement('div'); d.className='hero-item';
+            const imgSrc = type === 'HERO' ? heroImg(item) : petImg(item);
+            if(isUsed) {
+                d.style.cssText = 'opacity:0.3; pointer-events:none;';
+                d.innerHTML=`<div class="hero-circle"><img src="${imgSrc}" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
+            } else {
+                d.onclick=()=>{confirmSel(type,item)};
+                d.innerHTML=`<div class="hero-circle"><img src="${imgSrc}" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
+            }
+            g.appendChild(d);
+        });
+    }
+
+    function filterItems() { renderItemGrid(currentModalType, document.getElementById('searchBox').value); }
+
+    function confirmSel(type, val) {
+        if(type==='HERO') getDeckState(currentMode)[tempHeroIndex].name=val;
+        else {
+            if(currentMode==='myBattle') myPetState=val;
+            else if(currentMode==='siege') siegePetState=val;
+            else if(currentMode==='advent1') adventData[currentAdventBoss].team1.pet=val;
+            else if(currentMode==='advent2') adventData[currentAdventBoss].team2.pet=val;
+            else adminPetState=val;
+        }
+        renderDeckByMode(currentMode);
+        closeSelectorModal();
+    }
+    function closeSelectorModal() { document.getElementById('selectorModal').style.display='none'; }
+
+    // --- 내 공격팀 및 공략 덱 렌더링 ---
     function renderInteractiveDeck(mode) {
         const container = document.getElementById(mode==='myBattle'?'myBattleDeckContainer':'newAttackDeckContainer');
         const state = mode==='myBattle'?myDeckState:adminDeckState;
@@ -1006,89 +1056,28 @@
         if(mode === 'myBattle') updateBattleStats();
     }
 
-    // --- 각종 모달 ---
-    function openSelector(mode, type, idx=0) {
-        currentModalType = type;
+    // --- 적군 전용 렌더링 ---
+    function renderEnemyDeck() {
+        const container = document.getElementById('enemyDeckContainer');
+        let h = "";
+        enemyDeckState.forEach((o, i) => {
+            const img = o.name ?
+                `<img src="${heroImg(o.name)}" onerror="this.style.display='none'; this.parentNode.innerText='${o.name[0]}'">`
+                : "+";
 
-        document.getElementById('modalTitle').innerText = type==='HERO'?"영웅 선택":"펫 선택";
-
-        if(mode==='enemy') { currentMode=mode; openCommonModal(type); return; }
-        currentMode=mode; tempHeroIndex=idx;
-        openCommonModal(type);
-    }
-    function openCommonModal(type) {
-        document.getElementById('searchBox').value=""; renderItemGrid(type);
-        document.getElementById('selectorModal').style.display='flex';
-    }
-    // 현재 모드에서 이미 사용 중인 영웅 목록 (편집 중인 슬롯 제외)
-    function getUsedHeroes(mode) {
-        if(mode === 'enemy') return [...tempEnemyHeroes];
-        const state = getDeckState(mode);
-        return state.filter((h, i) => h.name && i !== tempHeroIndex).map(h => h.name);
-    }
-
-    function renderItemGrid(type, filter="") {
-        const g = document.getElementById('itemGrid'); g.innerHTML="";
-
-        // 해제 버튼 (적군 제외, 검색어 없을 때만)
-        if(currentMode !== 'enemy' && !filter) {
-            const r = document.createElement('div'); r.className='hero-item';
-            r.innerHTML=`<div class="hero-circle" style="border-color:#d47474;background:#3a2a2a;"><span style="font-size:22px;color:#d47474;">✕</span></div><div class="hero-name" style="color:#d47474;">해제</div>`;
-            if(type === 'HERO') {
-                r.onclick=()=>{ getDeckState(currentMode)[tempHeroIndex]=emptyHero(); renderDeckByMode(currentMode); closeSelectorModal(); };
-            } else {
-                r.onclick=()=>{ confirmSel(type, ''); };
-            }
-            g.appendChild(r);
-        }
-
-        const src = type==='HERO'?DATA_HEROES:DATA_PETS;
-        const usedHeroes = type==='HERO' ? getUsedHeroes(currentMode) : [];
-        src.filter(x=>x.includes(filter)).forEach(item => {
-            const isUsed = usedHeroes.includes(item);
-            const d = document.createElement('div'); d.className='hero-item';
-            const imgSrc = type === 'HERO' ? heroImg(item) : petImg(item);
-            if(isUsed) {
-                d.style.cssText = 'opacity:0.3; pointer-events:none;';
-                d.innerHTML=`<div class="hero-circle"><img src="${imgSrc}" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
-            } else {
-                d.onclick=()=>{confirmSel(type,item)};
-                d.innerHTML=`<div class="hero-circle"><img src="${imgSrc}" onerror="this.style.display='none'; this.parentNode.innerText='${item[0]}'"></div><div class="hero-name">${item}</div>`;
-            }
-            g.appendChild(d);
+            h += `<div class="hero-card" style="justify-content:center; padding:15px 5px; flex: 0 0 80px;">
+                    <div class="hero-slot" onclick="openSelector('enemy','HERO',${i})" style="margin-bottom:0;">${img}</div>
+                    ${o.name ? `<div style="font-size:11px; color:#c0c8d8; margin-top:8px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:100%; text-align:center;">${o.name}</div>` : ''}
+                  </div>`;
         });
-    }
-    function filterItems() { renderItemGrid(currentModalType, document.getElementById('searchBox').value); }
-    function getDeckState(mode) {
-        if(mode==='myBattle') return myDeckState;
-        if(mode==='siege') return siegeDeckState;
-        if(mode==='advent1') return adventData[currentAdventBoss].team1.deck;
-        if(mode==='advent2') return adventData[currentAdventBoss].team2.deck;
-        return adminDeckState;
-    }
-    function renderDeckByMode(mode) {
-        if(mode==='siege') renderSiegeDeck();
-        else if(mode==='advent1') renderAdventDeck(1);
-        else if(mode==='advent2') renderAdventDeck(2);
-        else renderInteractiveDeck(mode);
-    }
+        container.innerHTML = h;
 
-    function confirmSel(type, val) {
-        if(currentMode==='enemy') { if(tempEnemyHeroes.length>=3) return alert("3명까지 선택 가능합니다"); tempEnemyHeroes.push(val); updateEnemyPrev(); }
-        else {
-            if(type==='HERO') getDeckState(currentMode)[tempHeroIndex].name=val;
-            else {
-                if(currentMode==='myBattle') myPetState=val;
-                else if(currentMode==='siege') siegePetState=val;
-                else if(currentMode==='advent1') adventData[currentAdventBoss].team1.pet=val;
-                else if(currentMode==='advent2') adventData[currentAdventBoss].team2.pet=val;
-                else adminPetState=val;
-            }
-            renderDeckByMode(currentMode);
-        }
-        closeSelectorModal();
+        const res = enemyDeckState.filter(x=>x.name).map(x => serializeHero(x)).join(", ");
+        document.getElementById('newEnemyDeckResult').value = res;
+
+        const validNames = enemyDeckState.filter(x=>x.name).map(x=>x.name);
+        document.getElementById('newEnemyName').value = validNames.length > 0 ? validNames.join(' | ') : "";
     }
-    function closeSelectorModal() { document.getElementById('selectorModal').style.display='none'; }
 
     // 장비
     function openGear(mode, idx, slot) {
@@ -1129,8 +1118,6 @@
     }
     function renderAccGrid(filter) {
         const g=document.getElementById('accItemGrid'); g.innerHTML='';
-
-        // 해제 항목 (검색 없을 때만 표시)
         if(!filter) {
             const r=document.createElement('div'); r.className='hero-item';
             r.innerHTML=`<div class="hero-circle" style="border-color:#d47474;background:#3a2a2a;"><span style="font-size:22px;color:#d47474;">✕</span></div><div class="hero-name" style="color:#d47474;">해제</div>`;
@@ -1271,14 +1258,17 @@
             alert("적군 등록 완료!");
             globalData.enemies.push({name:n, deck:d});
             renderDropdowns();
+
+            // 등록 완료 후 적군 초기화 부분
             document.getElementById('newEnemyName').value="";
-            tempEnemyHeroes=[]; updateEnemyPrev();
+            enemyDeckState = Array(3).fill().map(emptyHero);
+            renderEnemyDeck();
+
             refreshSession();
         } catch(e) { alert("전송 오류"); }
         btn.disabled=false; btn.innerText=orig;
     }
 
-    // 덱 문자열에서 영웅 이름만 추출해 정규화된 키 반환 (장비/능력치 무시)
     function deckKey(deckStr) {
         if(!deckStr) return '';
         return deckStr.split(',').map(p => p.split('(')[0].replace(/\[.*\]/, '').trim()).join(',');
@@ -1328,13 +1318,6 @@
             refreshSession();
         } catch(e) { alert("전송 오류"); }
         btn.disabled=false; btn.innerText=orig;
-    }
-
-    function updateEnemyPrev() {
-        for(let i=1; i<=3; i++) document.getElementById(`preview_enemy_${i}`).innerHTML=tempEnemyHeroes[i-1]?`<img src="${heroImg(tempEnemyHeroes[i-1])}" style="width:100%;height:100%;object-fit:cover;">`:"+";
-        document.getElementById('newEnemyDeckResult').value=tempEnemyHeroes.join(',');
-        if(tempEnemyHeroes.length > 0)
-            document.getElementById('newEnemyName').value = tempEnemyHeroes.join(' | ');
     }
 
     function toggleAdmin() { document.getElementById('adminArea').classList.toggle('hidden'); }
