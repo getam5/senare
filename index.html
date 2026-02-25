@@ -677,7 +677,7 @@
     let adminDeckState = Array(3).fill().map(emptyHero);
     let myPetState = "", adminPetState = "", tempEnemyHeroes = [];
     let globalData = { members: [], enemies: [], strategies: [] };
-    let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
+    let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0, currentModalType = 'HERO';
     let currentStatsMode = "", currentStatsIdx = 0;
 
     // 사용자 세션 정보
@@ -1008,9 +1008,12 @@
 
     // --- 각종 모달 ---
     function openSelector(mode, type, idx=0) {
-        if(mode==='enemy') { currentMode=mode; openCommonModal('HERO'); return; }
-        currentMode=mode; tempHeroIndex=idx;
+        currentModalType = type;
+
         document.getElementById('modalTitle').innerText = type==='HERO'?"영웅 선택":"펫 선택";
+
+        if(mode==='enemy') { currentMode=mode; openCommonModal(type); return; }
+        currentMode=mode; tempHeroIndex=idx;
         openCommonModal(type);
     }
     function openCommonModal(type) {
@@ -1026,6 +1029,19 @@
 
     function renderItemGrid(type, filter="") {
         const g = document.getElementById('itemGrid'); g.innerHTML="";
+
+        // 해제 버튼 (적군 제외, 검색어 없을 때만)
+        if(currentMode !== 'enemy' && !filter) {
+            const r = document.createElement('div'); r.className='hero-item';
+            r.innerHTML=`<div class="hero-circle" style="border-color:#d47474;background:#3a2a2a;"><span style="font-size:22px;color:#d47474;">✕</span></div><div class="hero-name" style="color:#d47474;">해제</div>`;
+            if(type === 'HERO') {
+                r.onclick=()=>{ getDeckState(currentMode)[tempHeroIndex]=emptyHero(); renderDeckByMode(currentMode); closeSelectorModal(); };
+            } else {
+                r.onclick=()=>{ confirmSel(type, ''); };
+            }
+            g.appendChild(r);
+        }
+
         const src = type==='HERO'?DATA_HEROES:DATA_PETS;
         const usedHeroes = type==='HERO' ? getUsedHeroes(currentMode) : [];
         src.filter(x=>x.includes(filter)).forEach(item => {
@@ -1042,7 +1058,7 @@
             g.appendChild(d);
         });
     }
-    function filterItems() { renderItemGrid(document.getElementById('modalTitle').innerText.includes("영웅")?'HERO':'PET', document.getElementById('searchBox').value); }
+    function filterItems() { renderItemGrid(currentModalType, document.getElementById('searchBox').value); }
     function getDeckState(mode) {
         if(mode==='myBattle') return myDeckState;
         if(mode==='siege') return siegeDeckState;
