@@ -152,6 +152,12 @@
 
         /* --- 가입신청 영역 --- */
         #signupArea { margin-top:12px; padding-top:12px; border-top:1px solid #3d4a5c; }
+
+        /* --- 능력치 버튼/칩 --- */
+        .stats-btn { font-size:9px; padding:2px 4px; margin-top:3px; background:#1e2a3a; border:1px solid #3d5a7a; color:#7ab0d8; width:100%; border-radius:3px; cursor:pointer; }
+        .stats-btn.has-stats { border-color:#5ba8c8; color:#a0d8f0; background:#1a2f45; }
+        .stats-chips { display:flex; flex-wrap:wrap; gap:2px; margin-top:2px; width:100%; }
+        .stat-chip { font-size:7.5px; background:#1a2a3a; border:1px solid #3a5a7a; border-radius:3px; padding:1px 4px; color:#7ab0d8; white-space:nowrap; max-width:100%; overflow:hidden; text-overflow:ellipsis; }
     </style>
 </head>
 <body>
@@ -259,7 +265,7 @@
                 <h3>👾 적군 추가</h3>
                 <input type="text" id="newEnemyName" placeholder="적 닉네임">
                 <div class="deck-container" onclick="openSelector('enemy', 'HERO')" style="justify-content:center; cursor:pointer;">
-                    <div id="preview_enemy_1" class="hero-slot">+</div><div id="preview_enemy_2" class="hero-slot">+</div><div id="preview_enemy_3" class="hero-slot">+</div><div id="preview_enemy_4" class="hero-slot">+</div><div id="preview_enemy_5" class="hero-slot">+</div>
+                    <div id="preview_enemy_1" class="hero-slot">+</div><div id="preview_enemy_2" class="hero-slot">+</div><div id="preview_enemy_3" class="hero-slot">+</div>
                 </div>
                 <input type="hidden" id="newEnemyDeckResult">
                 <button onclick="addNewEnemy(event)">적군 등록 완료</button>
@@ -412,6 +418,18 @@
     </div>
 </div>
 
+<div id="heroStatsModal" class="modal" style="z-index:1100;">
+    <div class="modal-content" style="max-width:420px;">
+        <h3 style="margin-top:0; color:#f0d060;">📊 캐릭터 총합 능력치</h3>
+        <p id="heroStatsHeroName" style="color:#a87ccf; font-size:13px; margin:0 0 12px 0;"></p>
+        <div id="heroStatsFields" style="display:grid; grid-template-columns:1fr 1fr; gap:8px; overflow-y:auto; max-height:55vh;"></div>
+        <div style="display:flex; gap:8px; margin-top:14px;">
+            <button onclick="confirmStats()" style="background:#3a7a50;">확인</button>
+            <button onclick="closeStatsModal()" style="background:#8a4040;">취소</button>
+        </div>
+    </div>
+</div>
+
 <div id="accModal" class="modal">
     <div class="modal-content">
         <h3 style="margin-top:0;">장신구 선택</h3>
@@ -440,6 +458,67 @@
     const OPTS_ARMOR = ["받는피해감소", "막기확률", "모든 공격력(%)", "모든 공격력", "방어력(%)", "방어력", "생명력(%)", "생명력", "효과저항"];
     const GEAR_ACCESSORIES = (typeof ACC !== 'undefined') ? ACC : ["부활의 반지", "불사의 반지", "권능의 반지", "기합의 반지"];
 
+    // --- 능력치 필드 정의 ---
+    const STAT_FIELDS = [
+        {key:'atkPhys',   label:'공격력(물리)'},
+        {key:'atkMagic',  label:'공격력(마법)'},
+        {key:'def',       label:'방어력'},
+        {key:'hp',        label:'생명력'},
+        {key:'speed',     label:'속공'},
+        {key:'critRate',  label:'치명타 확률'},
+        {key:'critDmg',   label:'치명타 피해'},
+        {key:'weakAtk',   label:'약점 공격 확률'},
+        {key:'block',     label:'막기 확률'},
+        {key:'dmgReduce', label:'받기 피해 감소'},
+        {key:'effAcc',    label:'효과 적중'},
+        {key:'effRes',    label:'효과 저항'},
+    ];
+
+    // 빈 영웅 슬롯 생성
+    const emptyHero = () => ({name:"", w1:"", a1:"", w2:"", a2:"", acc:"", stats:{}});
+
+    // --- 덱 직렬화/파싱 헬퍼 ---
+    function parseHeroToken(p) {
+        // "[stats...]" 파싱
+        let stats = {}, token = p;
+        const bs = p.lastIndexOf('['), be = p.lastIndexOf(']');
+        if(bs > -1 && be > bs) {
+            p.substring(bs+1, be).split(';').forEach(pair => {
+                const ci = pair.indexOf(':');
+                if(ci > 0) stats[pair.substring(0,ci).trim()] = pair.substring(ci+1).trim();
+            });
+            token = p.substring(0, bs);
+        }
+        // "Name(w1/a1/w2/a2/acc)" 파싱
+        const fp = token.indexOf('('), lp = token.lastIndexOf(')');
+        const hero = emptyHero();
+        hero.stats = stats;
+        if(fp > 0 && lp > fp) {
+            hero.name = token.substring(0, fp).trim();
+            const g = token.substring(fp+1, lp).split('/');
+            hero.w1=g[0]||""; hero.a1=g[1]||""; hero.w2=g[2]||""; hero.a2=g[3]||""; hero.acc=g[4]||"";
+        } else {
+            hero.name = token.trim();
+        }
+        return hero;
+    }
+
+    function serializeHero(x) {
+        if(!x.name) return null;
+        let base = (x.w1||x.a1||x.w2||x.a2||x.acc)
+            ? `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`
+            : x.name;
+        const statsEntries = STAT_FIELDS.filter(f => x.stats && x.stats[f.key]).map(f => `${f.key}:${x.stats[f.key]}`);
+        if(statsEntries.length) base += `[${statsEntries.join(';')}]`;
+        return base;
+    }
+
+    function renderStatsBtn(mode, idx, stats) {
+        if(!stats) return '';
+        const cnt = STAT_FIELDS.filter(f => stats[f.key]).length;
+        return `<button class="stats-btn${cnt?' has-stats':''}" onclick="openStatsModal('${mode}',${idx})">📊 능력치${cnt?` (${cnt})`:''}</button>`;
+    }
+
     // --- SHA-256 헬퍼 ---
     async function sha256(str) {
         const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
@@ -459,11 +538,12 @@
     }
 
     // 변수
-    let myDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
-    let adminDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
+    let myDeckState = Array(3).fill().map(emptyHero);
+    let adminDeckState = Array(3).fill().map(emptyHero);
     let myPetState = "", adminPetState = "", tempEnemyHeroes = [];
     let globalData = { members: [], enemies: [], strategies: [] };
     let currentMode = "", currentGearIndex = 0, currentGearSlot = "", tempGearSet = "", tempGearOpt = "", tempHeroIndex = 0;
+    let currentStatsMode = "", currentStatsIdx = 0;
 
     // 사용자 세션 정보
     let currentUserRole = '';       // 'admin' | 'user'
@@ -476,8 +556,8 @@
     let adventData = {};
     [...ADVENT_BOSSES, ADVENT_FINAL_BOSS].forEach(boss => {
         adventData[boss] = {
-            team1: { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" },
-            team2: { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" },
+            team1: { deck: Array(5).fill().map(emptyHero), pet:"", pipeline:[], formation:"기본", memo:"" },
+            team2: { deck: Array(5).fill().map(emptyHero), pet:"", pipeline:[], formation:"기본", memo:"" },
             cleared: false
         };
     });
@@ -487,7 +567,7 @@
     const DAY_LABELS = {mon:'월',tue:'화',wed:'수',thu:'목',fri:'금',sat:'토',sun:'일'};
     let currentSiegeDay = "";
     let siegeData = {};
-    DAYS.forEach(d => { siegeData[d] = { deck: Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""})), pet:"", pipeline:[], formation:"기본", memo:"" }; });
+    DAYS.forEach(d => { siegeData[d] = { deck: Array(5).fill().map(emptyHero), pet:"", pipeline:[], formation:"기본", memo:"" }; });
     let siegeDeckState = siegeData.mon.deck;
     let siegePetState = "";
     let skillPipeline = [];
@@ -770,6 +850,7 @@
                         <div class="gear-slot slot-w2" onclick="openGear('${mode}',${i},'w2')">${formatGearSlot(o.w2)||"W2"}</div>
                         <div class="gear-slot slot-a2" onclick="openGear('${mode}',${i},'a2')">${formatGearSlot(o.a2)||"A2"}</div>
                     </div>
+                    ${o.name ? renderStatsBtn(mode, i, o.stats) : ''}
                   </div>`;
         });
 
@@ -780,10 +861,7 @@
         h += `<div class="pet-wrapper"><div class="pet-slot" onclick="openSelector('${mode}','PET')">${pImg}</div></div>`;
         container.innerHTML = h;
 
-        const res = state.filter(x=>x.name).map(x => {
-            if(x.w1||x.a1||x.w2||x.a2||x.acc) return `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`;
-            return x.name;
-        }).join(", ");
+        const res = state.filter(x=>x.name).map(x => serializeHero(x)).join(", ");
         document.getElementById(mode==='myBattle'?'myBattleDeckResult':'newAttackDeckResult').value = res;
         document.getElementById(mode==='myBattle'?'myBattlePetResult':'newAttackPetResult').value = pState;
     }
@@ -826,7 +904,7 @@
     }
 
     function confirmSel(type, val) {
-        if(currentMode==='enemy') { if(tempEnemyHeroes.length>=5) return alert("5명까지"); tempEnemyHeroes.push(val); updateEnemyPrev(); }
+        if(currentMode==='enemy') { if(tempEnemyHeroes.length>=3) return alert("3명까지 선택 가능합니다"); tempEnemyHeroes.push(val); updateEnemyPrev(); }
         else {
             if(type==='HERO') getDeckState(currentMode)[tempHeroIndex].name=val;
             else {
@@ -932,21 +1010,12 @@
     }
 
     function applyStrategy(s) {
-        myDeckState = Array(5).fill().map(()=>({name:"", w1:"", a1:"", w2:"", a2:"", acc:""}));
+        myDeckState = Array(3).fill().map(emptyHero);
         const parts = s.attack.split(',').map(p=>p.trim());
 
         parts.forEach((p, i) => {
-            if(i>=5) return;
-            const firstParen = p.indexOf('(');
-            const lastParen = p.lastIndexOf(')');
-            if(firstParen > 0 && lastParen > firstParen) {
-                myDeckState[i].name = p.substring(0, firstParen).trim();
-                const content = p.substring(firstParen + 1, lastParen);
-                const g = content.split('/');
-                myDeckState[i].w1=g[0]||""; myDeckState[i].a1=g[1]||""; myDeckState[i].w2=g[2]||""; myDeckState[i].a2=g[3]||""; myDeckState[i].acc=g[4]||"";
-            } else {
-                myDeckState[i].name = p;
-            }
+            if(i>=3) return;
+            myDeckState[i] = parseHeroToken(p);
         });
 
         myPetState = s.pet || "";
@@ -987,7 +1056,7 @@
             if(document.getElementById('enemySelect').value === t) selectEnemy();
 
             document.getElementById('newKeyItems').value=""; document.getElementById('newStrategyNote').value="";
-            adminDeckState = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
+            adminDeckState = Array(3).fill().map(emptyHero);
             adminPetState = "";
             renderInteractiveDeck('attack');
             refreshSession();
@@ -1040,7 +1109,7 @@
     }
 
     function updateEnemyPrev() {
-        for(let i=1; i<=5; i++) document.getElementById(`preview_enemy_${i}`).innerHTML=tempEnemyHeroes[i-1]?`<img src="${heroImg(tempEnemyHeroes[i-1])}" style="width:100%;height:100%;object-fit:cover;">`:"+";
+        for(let i=1; i<=3; i++) document.getElementById(`preview_enemy_${i}`).innerHTML=tempEnemyHeroes[i-1]?`<img src="${heroImg(tempEnemyHeroes[i-1])}" style="width:100%;height:100%;object-fit:cover;">`:"+";
         document.getElementById('newEnemyDeckResult').value=tempEnemyHeroes.join(',');
     }
 
@@ -1100,6 +1169,39 @@
             }
         } catch(e) { showMsg('오류가 발생했습니다.'); }
         btn.disabled=false; btn.innerText=orig;
+    }
+
+    // --- 영웅 능력치 모달 ---
+    function openStatsModal(mode, idx) {
+        const state = getDeckState(mode);
+        const hero = state[idx];
+        if(!hero || !hero.name) return alert("영웅을 먼저 선택하세요");
+        currentStatsMode = mode;
+        currentStatsIdx = idx;
+        document.getElementById('heroStatsHeroName').innerText = `${hero.name} — 목표 능력치`;
+        const stats = hero.stats || {};
+        document.getElementById('heroStatsFields').innerHTML = STAT_FIELDS.map(f =>
+            `<div>
+                <label style="font-size:11px;color:#8090a8;display:block;margin-bottom:2px;">${f.label}</label>
+                <input type="text" id="stat_${f.key}" value="${stats[f.key]||''}" placeholder="예: 000이상">
+            </div>`
+        ).join('');
+        document.getElementById('heroStatsModal').style.display = 'flex';
+    }
+    function closeStatsModal() {
+        document.getElementById('heroStatsModal').style.display = 'none';
+    }
+    function confirmStats() {
+        const state = getDeckState(currentStatsMode);
+        if(!state || !state[currentStatsIdx]) return;
+        const stats = {};
+        STAT_FIELDS.forEach(f => {
+            const val = document.getElementById(`stat_${f.key}`).value.trim();
+            if(val) stats[f.key] = val;
+        });
+        state[currentStatsIdx].stats = stats;
+        renderDeckByMode(currentStatsMode);
+        closeStatsModal();
     }
 
     // --- 비밀번호 변경 ---
@@ -1271,15 +1373,10 @@
             sd.pet = s.pet || "";
 
             if(s.deck) {
-                sd.deck = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
+                sd.deck = Array(5).fill().map(emptyHero);
                 s.deck.split(',').map(p=>p.trim()).forEach((p, i) => {
                     if(i>=5) return;
-                    const fp = p.indexOf('('), lp = p.lastIndexOf(')');
-                    if(fp > 0 && lp > fp) {
-                        sd.deck[i].name = p.substring(0, fp).trim();
-                        const g = p.substring(fp+1, lp).split('/');
-                        sd.deck[i].w1=g[0]||""; sd.deck[i].a1=g[1]||""; sd.deck[i].w2=g[2]||""; sd.deck[i].a2=g[3]||""; sd.deck[i].acc=g[4]||"";
-                    } else { sd.deck[i].name = p; }
+                    sd.deck[i] = parseHeroToken(p);
                 });
             }
 
@@ -1303,10 +1400,7 @@
         const sd = siegeData[currentSiegeDay];
         const nick = document.getElementById('myNick').value;
 
-        const deckStr = sd.deck.filter(x=>x.name).map(x => {
-            if(x.w1||x.a1||x.w2||x.a2||x.acc) return `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`;
-            return x.name;
-        }).join(", ");
+        const deckStr = sd.deck.filter(x=>x.name).map(x => serializeHero(x)).join(", ");
 
         const pipeStr = sd.pipeline.map(p => `${p.hero}(S${p.skill})`).join(" \u2192 ");
 
@@ -1356,6 +1450,7 @@
                         <button class="skill-btn s1" onclick="addSkill(${i},1)" ${o.name?'':'disabled'}>스킬1</button>
                         <button class="skill-btn s2" onclick="addSkill(${i},2)" ${o.name?'':'disabled'}>스킬2</button>
                     </div>
+                    ${o.name ? renderStatsBtn('siege', i, o.stats) : ''}
                   </div>`;
         });
 
@@ -1482,6 +1577,7 @@
                         <button class="skill-btn s1" onclick="addAdventSkill(${teamNum},${i},1)" ${o.name?'':'disabled'}>스킬1</button>
                         <button class="skill-btn s2" onclick="addAdventSkill(${teamNum},${i},2)" ${o.name?'':'disabled'}>스킬2</button>
                     </div>
+                    ${o.name ? renderStatsBtn(mode, i, o.stats) : ''}
                   </div>`;
         });
 
@@ -1531,10 +1627,7 @@
         const bd = adventData[currentAdventBoss];
         const nick = document.getElementById('myNick').value;
 
-        const deckStr = (team) => team.deck.filter(x=>x.name).map(x => {
-            if(x.w1||x.a1||x.w2||x.a2||x.acc) return `${x.name}(${x.w1||"-"}/${x.a1||"-"}/${x.w2||"-"}/${x.a2||"-"}/${x.acc||"-"})`;
-            return x.name;
-        }).join(", ");
+        const deckStr = (team) => team.deck.filter(x=>x.name).map(x => serializeHero(x)).join(", ");
         const pipeStr = (team) => team.pipeline.map(p => `${p.hero}(S${p.skill})`).join(" \u2192 ");
 
         if(!deckStr(bd.team1) && !deckStr(bd.team2)) return alert("최소 1팀 이상 영웅을 배치해주세요");
@@ -1569,16 +1662,11 @@
         if(!globalData.advent) return;
 
         const parseDeck = (deckStr) => {
-            const deck = Array(5).fill().map(()=>({name:"",w1:"",a1:"",w2:"",a2:"",acc:""}));
+            const deck = Array(5).fill().map(emptyHero);
             if(!deckStr) return deck;
             deckStr.split(',').map(p=>p.trim()).forEach((p, i) => {
                 if(i>=5) return;
-                const fp=p.indexOf('('), lp=p.lastIndexOf(')');
-                if(fp>0 && lp>fp) {
-                    deck[i].name = p.substring(0,fp).trim();
-                    const g = p.substring(fp+1,lp).split('/');
-                    deck[i].w1=g[0]||""; deck[i].a1=g[1]||""; deck[i].w2=g[2]||""; deck[i].a2=g[3]||""; deck[i].acc=g[4]||"";
-                } else { deck[i].name = p; }
+                deck[i] = parseHeroToken(p);
             });
             return deck;
         };
