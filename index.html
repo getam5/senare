@@ -66,12 +66,8 @@
 
         .gear-modal-grid { display: flex; gap: 5px; height: 300px; }
         .gear-col { flex: 1; overflow-y: auto; background: #2a3444; border: 1px solid #4d5a6e; border-radius: 4px; display:flex; flex-direction:column;}
-        .gear-btn, .acc-btn { padding: 12px; background: transparent; color: #a0a8b8; border: none; border-bottom: 1px solid #3d4a5c; text-align: left; cursor: pointer; }
+        .gear-btn { padding: 12px; background: transparent; color: #a0a8b8; border: none; border-bottom: 1px solid #3d4a5c; text-align: left; cursor: pointer; }
         .gear-btn.selected { background: #2a6058; color: #fff; font-weight: bold; }
-        .acc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; overflow-y: auto; max-height: 380px; margin-top:10px;}
-        .acc-btn { border:1px solid #4d5a6e; background:#3a4758; border-radius:6px; text-align:center; padding:6px 2px; display:flex; flex-direction:column; align-items:center; gap:3px; cursor:pointer; }
-        .acc-btn img { width:36px; height:36px; object-fit:contain; }
-        .acc-btn span { font-size:9px; color:#c0c8d8; line-height:1.2; word-break:keep-all; }
 
         /* 데스크탑에서만 표시 */
         .hdr-brand { display: none; }
@@ -109,17 +105,8 @@
         .day-nav { display: flex; gap: 3px; margin-bottom: 12px; }
         .day-btn { flex: 1; padding: 9px 2px; background: #323d50; color: #8090a8; border: 1px solid #4d5a6e; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; min-width: 0; overflow: hidden; }
         .day-btn.active { background: #a87ccf; color: #fff; border-color: #a87ccf; }
-        .day-btn.sat { }
-        .day-btn.sun { }
         .day-btn.sat.active { background: #4090c0; border-color: #4090c0; }
         .day-btn.sun.active { background: #d47474; border-color: #d47474; }
-
-        /* --- 파괴신 사황 선택 --- */
-        .sahwang-nav { display: flex; gap: 6px; margin-bottom: 12px; }
-        .sahwang-btn { flex: 1; padding: 10px 4px; background: #323d50; color: #8090a8; border: 2px solid #4d5a6e; border-radius: 8px; font-size: 13px; font-weight: bold; cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 4px; }
-        .sahwang-btn .sh-icon { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; border: 2px solid #5f6d82; }
-        .sahwang-btn .sh-icon img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
-        .sahwang-btn.active { background: #4a3060; border-color: #a87ccf; color: #e0d0f0; }
 
         /* --- 강림 원정대 --- */
         .advent-boss-nav { display: flex; gap: 5px; margin-bottom: 12px; flex-wrap: wrap; }
@@ -128,10 +115,7 @@
         .advent-boss-img img { width: 100%; height: 100%; object-fit: cover; object-position: top 10%; }
         .advent-boss-btn.active { background: #4a3060; border-color: #a87ccf; color: #e0d0f0; }
         .advent-boss-btn.active .advent-boss-img { border-color: #a87ccf; }
-        .advent-boss-btn.cleared .advent-boss-img { border-color: #6bbd7a; }
         .advent-boss-btn.final-boss.active { background: #602030; border-color: #d47474; color: #f0d0d0; }
-        .advent-boss-btn.locked { cursor: not-allowed; opacity: 0.5; }
-        .clear-badge { position: absolute; top: 3px; right: 3px; background: #6bbd7a; color: #1e2330; border-radius: 50%; width: 15px; height: 15px; font-size: 9px; display: flex; align-items: center; justify-content: center; font-weight: bold; line-height: 1; }
         .team-divider { border-color: #4d5a6e; margin: 14px 0; }
         .team-label { margin: 0 0 8px 0; padding: 6px 10px; border-radius: 6px; font-size: 13px; display: inline-block; }
         .team1-label { background: #1e3050; color: #80b8e0; border-left: 3px solid #4090c0; }
@@ -258,7 +242,22 @@
 
             /* === 전적 바 === */
             #battleStatsBar { font-size: 15px; }
+
+            /* === 공격대 편성 그리드 === */
+            .raid-boss-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
         }
+
+        /* --- 공격대 구성 탭 --- */
+        .raid-pool-area { min-height: 52px; background: #323d50; border: 2px dashed #4d5a6e; border-radius: 8px; padding: 8px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; transition: border-color 0.15s, background 0.15s; }
+        .raid-pool-area.drag-over { border-color: #5ba8c8; background: #283048; }
+        .raid-member-chip { padding: 6px 14px; background: #323d50; border: 1px solid #5ba8c8; border-radius: 20px; color: #d8dce6; font-size: 13px; cursor: grab; user-select: none; touch-action: none; }
+        .raid-member-chip.dragging { opacity: 0.35; }
+        .raid-boss-name { font-size: 14px; font-weight: bold; color: #a87ccf; margin: 0 0 8px 0; display: flex; align-items: center; gap: 8px; }
+        .raid-boss-count { font-size: 11px; color: #8090a8; font-weight: normal; }
+        .raid-drop-zone { min-height: 48px; background: #323d50; border: 2px dashed #4d5a6e; border-radius: 8px; padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; transition: border-color 0.15s, background 0.15s; }
+        .raid-drop-zone.drag-over { border-color: #a87ccf; background: #3a3050; }
+        .raid-assigned-chip { padding: 6px 10px; background: #4a3060; border: 1px solid #a87ccf; border-radius: 20px; color: #e0d0f0; font-size: 12px; cursor: grab; user-select: none; touch-action: none; display: inline-flex; align-items: center; gap: 4px; }
+        .chip-remove { color: #d47474; font-size: 11px; cursor: pointer; line-height: 1; padding: 0 1px; }
     </style>
 </head>
 <body>
@@ -298,7 +297,8 @@
             <div class="tab-nav">
                 <button class="tab-btn active" onclick="switchTab('guild')">길드전</button>
                 <button class="tab-btn" onclick="switchTab('siege')">공성전</button>
-                <button class="tab-btn" onclick="switchTab('advent')">강림원정</button>
+                <button class="tab-btn" onclick="switchTab('advent')">강림원정대</button>
+                <button class="tab-btn" onclick="switchTab('raid')">강림원정 공격대</button>
                 <button class="tab-btn hidden" id="adminTabBtn" onclick="switchTab('admin')">⚙️ 관리</button>
             </div>
             <div id="userInfoBar">
@@ -483,6 +483,13 @@
                 <h3>👥 멤버 관리</h3>
                 <div id="allMembersList"><p style="color:#5f6d82;">로딩 중...</p></div>
             </div>
+        </div><div id="raidTab" class="hidden">
+            <div class="box neon-blue">
+                <h3 style="margin:0 0 10px 0;">👥 공격대원 대기</h3>
+                <div id="raidMemberPool" class="raid-pool-area"></div>
+            </div>
+            <div id="raidBossContainer" class="raid-boss-grid"></div>
+            <button onclick="saveRaidLineup(event)" style="background:#3a7a50; margin-top:4px;">💾 편성 저장</button>
         </div></div></div></div><div id="selectorModal" class="modal">
     <div class="modal-content">
         <h3 id="modalTitle">선택</h3>
@@ -669,6 +676,13 @@
             cleared: false
         };
     });
+
+    // 공격대 편성 변수
+    let raidLineup = {};
+    ADVENT_BOSSES.forEach(b => raidLineup[b] = []);
+    let _raidDragNick = null, _raidDragSourceBoss = null;
+    let _raidTouchNick = null, _raidTouchSourceBoss = null, _raidTouchClone = null;
+    let _raidPoolInited = false;
 
     // 공성전 변수
     const DAYS = ['mon','tue','wed','thu','fri','sat','sun'];
@@ -1325,7 +1339,7 @@
     // --- 탭 전환 ---
     function switchTab(tab) {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-        const tabMap = ['guild','siege','advent','admin'];
+        const tabMap = ['guild','siege','advent','raid','admin'];
         const idx = tabMap.indexOf(tab);
         const btns = document.querySelectorAll('.tab-btn');
         if(idx >= 0 && btns[idx]) btns[idx].classList.add('active');
@@ -1333,9 +1347,11 @@
         document.getElementById('guildWarTab').classList.toggle('hidden', tab!=='guild');
         document.getElementById('siegeWarTab').classList.toggle('hidden', tab!=='siege');
         document.getElementById('adventTab').classList.toggle('hidden', tab!=='advent');
+        document.getElementById('raidTab').classList.toggle('hidden', tab!=='raid');
         document.getElementById('adminMgmtTab').classList.toggle('hidden', tab!=='admin');
 
         if(tab === 'admin') loadAdminTab();
+        if(tab === 'raid') loadRaidLineup();
     }
 
     // --- 가입 신청 ---
@@ -1863,6 +1879,191 @@
             refreshSession();
         } catch(e) { alert("저장 오류"); }
         btn.disabled=false; btn.innerText=orig;
+    }
+
+    // ===== 공격대 편성 =====
+    async function loadRaidLineup() {
+        if(!_raidPoolInited) {
+            _raidPoolInited = true;
+            const poolEl = document.getElementById('raidMemberPool');
+            poolEl.addEventListener('dragover', e => { e.preventDefault(); poolEl.classList.add('drag-over'); });
+            poolEl.addEventListener('dragleave', () => poolEl.classList.remove('drag-over'));
+            poolEl.addEventListener('drop', e => {
+                e.preventDefault();
+                poolEl.classList.remove('drag-over');
+                if(_raidDragSourceBoss) {
+                    raidLineup[_raidDragSourceBoss] = raidLineup[_raidDragSourceBoss].filter(n => n !== _raidDragNick);
+                    renderRaidTab();
+                }
+                _raidDragNick = null; _raidDragSourceBoss = null;
+            });
+        }
+        try {
+            const data = await sbFetch("GET", "raid_lineup", null, "?select=*");
+            ADVENT_BOSSES.forEach(b => raidLineup[b] = []);
+            (data || []).forEach(row => {
+                if(raidLineup.hasOwnProperty(row.boss)) {
+                    raidLineup[row.boss] = row.members ? row.members.split(',').filter(x => x) : [];
+                }
+            });
+        } catch(e) { /* 실패 시 빈 상태 유지 */ }
+        renderRaidTab();
+    }
+
+    function renderRaidTab() {
+        const allActive = globalData.members.filter(m => m.status === 'active').map(m => m.nick);
+        const assignedAll = new Set(Object.values(raidLineup).flat());
+        const pool = allActive.filter(n => !assignedAll.has(n));
+
+        const poolEl = document.getElementById('raidMemberPool');
+        if(!poolEl) return;
+        poolEl.innerHTML = '';
+        if(pool.length === 0) {
+            poolEl.innerHTML = '<span style="color:#5f6d82;font-size:13px;">모든 공격대원이 배정되었습니다</span>';
+        } else {
+            pool.forEach(nick => poolEl.appendChild(makeRaidChip(nick, null)));
+        }
+
+        const container = document.getElementById('raidBossContainer');
+        container.innerHTML = '';
+        ADVENT_BOSSES.forEach(boss => {
+            const section = document.createElement('div');
+            section.className = 'box neon-purple';
+            const cnt = (raidLineup[boss] || []).length;
+            section.innerHTML = `
+                <div class="raid-boss-name">⚔️ ${boss}<span class="raid-boss-count">${cnt}명</span></div>
+                <div class="raid-drop-zone" data-boss="${boss}"></div>
+            `;
+            const zone = section.querySelector('.raid-drop-zone');
+            zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+            zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+            zone.addEventListener('drop', e => raidHandleDrop(e, boss));
+            (raidLineup[boss] || []).forEach(nick => zone.appendChild(makeRaidChip(nick, boss)));
+            container.appendChild(section);
+        });
+    }
+
+    function makeRaidChip(nick, boss) {
+        const chip = document.createElement('div');
+        chip.className = boss ? 'raid-assigned-chip' : 'raid-member-chip';
+        chip.draggable = true;
+        chip.dataset.nick = nick;
+        chip.dataset.boss = boss || '';
+        if(boss) {
+            chip.innerHTML = `${nick} <span class="chip-remove">✕</span>`;
+            chip.querySelector('.chip-remove').onclick = e => {
+                e.stopPropagation();
+                raidLineup[boss] = raidLineup[boss].filter(n => n !== nick);
+                renderRaidTab();
+            };
+        } else {
+            chip.textContent = nick;
+        }
+        chip.addEventListener('dragstart', e => {
+            e.dataTransfer.effectAllowed = 'move';
+            _raidDragNick = nick;
+            _raidDragSourceBoss = boss;
+            chip.classList.add('dragging');
+        });
+        chip.addEventListener('dragend', () => chip.classList.remove('dragging'));
+        chip.addEventListener('touchstart', raidTouchStart, { passive: false });
+        chip.addEventListener('touchmove', raidTouchMove, { passive: false });
+        chip.addEventListener('touchend', raidTouchEnd);
+        return chip;
+    }
+
+    function raidHandleDrop(e, targetBoss) {
+        e.preventDefault();
+        e.currentTarget.classList.remove('drag-over');
+        if(!_raidDragNick || _raidDragSourceBoss === targetBoss) { _raidDragNick = null; return; }
+        if(_raidDragSourceBoss !== null) {
+            raidLineup[_raidDragSourceBoss] = raidLineup[_raidDragSourceBoss].filter(n => n !== _raidDragNick);
+        }
+        if(!(raidLineup[targetBoss] || []).includes(_raidDragNick)) {
+            raidLineup[targetBoss].push(_raidDragNick);
+        }
+        _raidDragNick = null; _raidDragSourceBoss = null;
+        renderRaidTab();
+    }
+
+    function raidTouchStart(e) {
+        const chip = e.currentTarget;
+        _raidTouchNick = chip.dataset.nick;
+        _raidTouchSourceBoss = chip.dataset.boss || null;
+        _raidTouchClone = chip.cloneNode(true);
+        Object.assign(_raidTouchClone.style, {
+            position:'fixed', opacity:'0.85', pointerEvents:'none',
+            zIndex:'9999', border:'2px solid #a87ccf', borderRadius:'20px'
+        });
+        document.body.appendChild(_raidTouchClone);
+        const t = e.touches[0];
+        _raidTouchClone.style.left = (t.clientX - 30) + 'px';
+        _raidTouchClone.style.top  = (t.clientY - 14) + 'px';
+        chip.style.opacity = '0.3';
+        e.preventDefault();
+    }
+
+    function raidTouchMove(e) {
+        e.preventDefault();
+        if(!_raidTouchClone) return;
+        const t = e.touches[0];
+        _raidTouchClone.style.left = (t.clientX - 30) + 'px';
+        _raidTouchClone.style.top  = (t.clientY - 14) + 'px';
+        document.querySelectorAll('.raid-drop-zone, .raid-pool-area').forEach(z => z.classList.remove('drag-over'));
+        const el = document.elementFromPoint(t.clientX, t.clientY);
+        if(el) {
+            const zone = el.closest('.raid-drop-zone');
+            const pool = el.closest('.raid-pool-area');
+            if(zone) zone.classList.add('drag-over');
+            else if(pool) pool.classList.add('drag-over');
+        }
+    }
+
+    function raidTouchEnd(e) {
+        const chip = e.currentTarget;
+        chip.style.opacity = '';
+        if(!_raidTouchClone) return;
+        _raidTouchClone.remove(); _raidTouchClone = null;
+        document.querySelectorAll('.raid-drop-zone, .raid-pool-area').forEach(z => z.classList.remove('drag-over'));
+        const t = e.changedTouches[0];
+        const el = document.elementFromPoint(t.clientX, t.clientY);
+        if(el) {
+            const zone = el.closest('.raid-drop-zone');
+            const pool = el.closest('.raid-pool-area');
+            const targetBoss = zone ? zone.dataset.boss : null;
+            if(targetBoss && targetBoss !== (_raidTouchSourceBoss || '')) {
+                if(_raidTouchSourceBoss) {
+                    raidLineup[_raidTouchSourceBoss] = raidLineup[_raidTouchSourceBoss].filter(n => n !== _raidTouchNick);
+                }
+                if(!raidLineup[targetBoss].includes(_raidTouchNick)) {
+                    raidLineup[targetBoss].push(_raidTouchNick);
+                }
+                renderRaidTab();
+            } else if(pool && _raidTouchSourceBoss) {
+                raidLineup[_raidTouchSourceBoss] = raidLineup[_raidTouchSourceBoss].filter(n => n !== _raidTouchNick);
+                renderRaidTab();
+            }
+        }
+        _raidTouchNick = null; _raidTouchSourceBoss = null;
+    }
+
+    async function saveRaidLineup(ev) {
+        const btn = ev.target;
+        btn.disabled = true; btn.textContent = '저장 중...';
+        try {
+            await Promise.all(ADVENT_BOSSES.map(boss =>
+                sbFetch("POST", "raid_lineup",
+                    { boss, members: (raidLineup[boss] || []).join(',') },
+                    "?on_conflict=boss",
+                    { "Prefer": "resolution=merge-duplicates,return=minimal" }
+                )
+            ));
+            btn.textContent = '✅ 저장됨';
+            setTimeout(() => { btn.disabled = false; btn.textContent = '💾 편성 저장'; }, 2000);
+        } catch(e) {
+            btn.disabled = false; btn.textContent = '💾 편성 저장';
+            alert('저장 실패: ' + e.message);
+        }
     }
 
     function loadAdventFromServer(nick) {
